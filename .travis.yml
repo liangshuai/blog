@@ -5,7 +5,7 @@ node_js: stable
 install:
   - git clone https://github.com/aircloud/hexo-theme-aircloud.git themes/aircloud
   - npm install
-  - npm run sync
+  - npx yuque-hexo sync
 
 script:
   - hexo clean
