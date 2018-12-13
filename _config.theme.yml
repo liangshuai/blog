@@ -27,10 +27,10 @@ custom_script:
 toc: false
 
 # 是否支持 数学公式
-mathjax: true
+mathjax: false
 
 # 是否开启 音乐组件
-player: true
+player: false
 
 # 是否开启 分享功能: https://github.com/overtrue/share.js
 social_share:
