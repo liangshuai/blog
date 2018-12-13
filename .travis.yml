@@ -3,7 +3,7 @@ node_js: stable
 
 # S: Build Lifecycle
 install:
-  - git clone https://github.com/dongyuanxin/theme-bmw.git themes/bmw
+  - git clone https://github.com/liangshuai/theme-bmw.git themes/bmw
   - npm install
   - npx yuque-hexo sync
   - cp _config.theme.yml themes/bmw/_config.yml
