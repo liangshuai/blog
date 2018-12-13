@@ -6,7 +6,7 @@ install:
   - git clone https://github.com/dongyuanxin/theme-bmw.git themes/bmw
   - npm install
   - npx yuque-hexo sync
-  - cp _config.theme.yml themes/
+  - cp _config.theme.yml themes/bmw/_config.yml
 
 script:
   - hexo clean
