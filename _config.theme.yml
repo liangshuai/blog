@@ -48,10 +48,10 @@ reward:
     # src: 二维码位置
     # meta: 二维码提示信息
     -
-      src: /images/wechat.png 
+      src: /img/wechat.png 
       meta: "微信扫一扫, 向我投食"
     -
-      src: /images/alipay.png
+      src: /img/alipay.png
       meta: "支付宝扫一扫, 向我投食"
 
 # 是否开启版权声明
