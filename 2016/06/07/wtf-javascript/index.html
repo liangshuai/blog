@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  <title>JavaScript的一些坑 | 梁帅的博客</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Javascript,">
+  
+
+  
+
+  
+
+  
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="apple-touch-icon" href="/img/favicon.ico">
+  
+
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/icon/iconfont.css">
+<link rel="stylesheet" href="/css/github-markdown.css">
+<link rel="stylesheet" href="/css/highlight.css">
+
+  <script src="/js/util.js"></script>
+<script src="/js/valine.min.js"></script>
+
+  
+
+  
+
+  
+    <link href="https://cdn.bootcss.com/social-share.js/1.0.16/css/share.min.css" rel="stylesheet">
+  
+  
+  <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js" async></script>
+  
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.0/dist/av-min.js"></script>
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <div id="app">
+
+      <div class="header-wrap">
+  <header>
+    <div class="site-brand">
+      <div class="site-title">
+        <a href="/">梁帅の博客</a>
+      </div>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav-menu">
+      
+        <li class="nav-item" data-path="/">
+          
+            <a href="/" target="_self">
+              主页
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          
+            <a href="/archives/" target="_self">
+              归档
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          
+            <a href="/tags/" target="_self">
+              标签
+            </a>
+          
+        </li>
+      
+      </ul>
+    </nav>
+    <i class="iconfont icon-menu"></i>
+  </header>
+</div>
+
+<script>
+  let links = document.querySelectorAll('.nav-item');
+  for(let link of links){
+    let childrenLink = link.querySelector('ul');
+    link.addEventListener('mouseenter', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown active";
+      }
+    })
+    link.addEventListener('mouseleave', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown";
+      }
+    })
+  }
+  let rootRealPath = getRealPath(window.location.pathname, true);
+  for(let link of links) {
+    let linkPath = link.getAttribute("data-path");
+    if(linkPath && getRealPath(linkPath, true) === rootRealPath) {
+      link.className = "nav-item hover";
+    }
+  }
+
+  let iconMenu = document.querySelector("i.iconfont.icon-menu"),
+    iconMenuClicked = false;
+  let navDOM = document.querySelector("nav.site-navigation");
+  iconMenu.addEventListener("click", () => {
+    iconMenuClicked 
+      ? navDOM.className = "site-navigation active"
+      : navDOM.className = "site-navigation";
+    iconMenuClicked = !iconMenuClicked;
+  })
+</script>
+
+      
+
+
+
+
+
+
+
+
+<div class="container post-index">
+
+  
+
+<div class="post">
+  <h1 class="article-title">
+    <span>JavaScript的一些坑</span>
+  </h1>
+  <div class="article-top-meta">
+    <span>
+      发布 : 
+      2016-06-07
+    </span>
+    
+    
+      <span>
+        浏览 : <span class="article-timer" data-identity="wtf-javascript"></span>
+      </span>
+    
+  </div>
+
+  
+
+  <div class="article-content">
+    <div class="markdown-body">
+      <p>JavaScript作为一门同时结合了函数式编程和面向对象编程的语言，使用起来非常的宽松灵活。但是由于其诞生之初仓促的设计(<a href="http://www.ruanyifeng.com/blog/2011/06/birth_of_javascript.html" target="_blank" rel="noopener">Javascript诞生记</a>) 、设计之初并没有同时结合函数式编程和面向对象编程的先例、过早标准化等问题，导致使用过程中经常会遇到各种问题。本文总结一些问题，部分是可能语言上的缺陷，也有部分属于用法的问题。</p>
+<a id="more"></a>
+<h3 id="1-整数上调用Number-prototype的方法"><a href="#1-整数上调用Number-prototype的方法" class="headerlink" title="1. 整数上调用Number.prototype的方法"></a>1. 整数上调用Number.prototype的方法</h3><p>Number.prototype里面有toFixed()、toLocaleString()、toString()、valueOf()、toSource()等方法，直接调用的话会报错，以toString()为例</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">3.</span>toString()</span><br><span class="line"><span class="number">3.</span>.toString()</span><br><span class="line">(<span class="number">3</span>).toString()</span><br><span class="line"><span class="number">3</span> + <span class="string">''</span> <span class="comment">// 推荐的转换姿势</span></span><br></pre></td></tr></table></figure>
+<p>上面的第一行会报</p>
+<blockquote>
+<p>Uncaught SyntaxError: Unexpected token ILLEGAL(…)</p>
+</blockquote>
+<p>该问题的原因是当在整数后调调用toString()时，JavaScript发现整数后面的点后，会期望遇到的是一个浮点数，结果点后面是toString()，所以出现异常。</p>
+<p>3..toString() 能够正常输出是由于<code>3.</code>  会被解释成浮点数，相当于对一个浮点数调用toString()</p>
+<h3 id="2-2-2"><a href="#2-2-2" class="headerlink" title="2. 2 == [[[2]]]"></a>2. 2 == [[[2]]]</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2</span> == [[[<span class="number">2</span>]]]; 			<span class="comment">// true</span></span><br><span class="line"><span class="keyword">var</span> a = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];	</span><br><span class="line">a[[<span class="number">2</span>]] === a[<span class="number">2</span>];		<span class="comment">// true</span></span><br><span class="line">[[[[[[[<span class="number">2</span>]]]]]]] == <span class="number">2</span>;	<span class="comment">//true</span></span><br></pre></td></tr></table></figure>
+<p>对于非严格相等， JavaScript比较规则如下(<a href="http://www.ecma-international.org/ecma-262/6.0/#sec-abstract-equality-comparison" target="_blank" rel="noopener">ECMAScript® 2015 Language Specification</a>):</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">ReturnIfAbrupt(x).</span><br><span class="line">ReturnIfAbrupt(y).</span><br><span class="line">If Type(x) is the same <span class="keyword">as</span> Type(y), then</span><br><span class="line">Return the result <span class="keyword">of</span> performing Strict Equality Comparison x === y.</span><br><span class="line">If x is <span class="literal">null</span> and y is <span class="literal">undefined</span>, <span class="keyword">return</span> <span class="literal">true</span>.</span><br><span class="line">If x is <span class="literal">undefined</span> and y is <span class="literal">null</span>, <span class="keyword">return</span> <span class="literal">true</span>.</span><br><span class="line">If Type(x) is <span class="built_in">Number</span> and Type(y) is <span class="built_in">String</span>,</span><br><span class="line"><span class="keyword">return</span> the result <span class="keyword">of</span> the comparison x == ToNumber(y).</span><br><span class="line">If Type(x) is <span class="built_in">String</span> and Type(y) is <span class="built_in">Number</span>,</span><br><span class="line"><span class="keyword">return</span> the result <span class="keyword">of</span> the comparison ToNumber(x) == y.</span><br><span class="line">If Type(x) is <span class="built_in">Boolean</span>, <span class="keyword">return</span> the result <span class="keyword">of</span> the comparison ToNumber(x) == y.</span><br><span class="line">If Type(y) is <span class="built_in">Boolean</span>, <span class="keyword">return</span> the result <span class="keyword">of</span> the comparison x == ToNumber(y).</span><br><span class="line">If Type(x) is either <span class="built_in">String</span>, <span class="built_in">Number</span>, or <span class="built_in">Symbol</span> and Type(y) is <span class="built_in">Object</span>, then</span><br><span class="line"><span class="keyword">return</span> the result <span class="keyword">of</span> the comparison x == ToPrimitive(y).</span><br><span class="line">If Type(x) is <span class="built_in">Object</span> and Type(y) is either <span class="built_in">String</span>, <span class="built_in">Number</span>, or <span class="built_in">Symbol</span>, then</span><br><span class="line"><span class="keyword">return</span> the result <span class="keyword">of</span> the comparison ToPrimitive(x) == y.</span><br><span class="line">Return <span class="literal">false</span>.</span><br></pre></td></tr></table></figure>
+<p>所以当<code>2 == [[[2]]]</code> 比较时， [[[2]]] 会被转换成原始类型，相当于执行了</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2</span> === <span class="built_in">Number</span>([[[<span class="number">2</span>]]].valueOf().toString())</span><br></pre></td></tr></table></figure>
+<p>所以结果是true</p>
+<p>而<code>a[[2]] === a[2]</code> 比较时由于a[] 里面需要的是数字或字符串， 所以<code>[2]</code> 会被转换成数字或字符串，所以相当于a[2]</p>
+<h3 id="3-Number上的一些坑"><a href="#3-Number上的一些坑" class="headerlink" title="3. Number上的一些坑"></a>3. Number上的一些坑</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Number</span>.MIN_VALUE &gt; <span class="number">0</span>; <span class="comment">//true</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="literal">NaN</span>	<span class="comment">//number</span></span><br><span class="line"><span class="literal">NaN</span> === <span class="literal">NaN</span>	<span class="comment">//false</span></span><br></pre></td></tr></table></figure>
+<p>上面第一个 <code>Number.MIN_VALUE</code> 其中<code>MIN_VALUE</code>返回的是大于零的最小数字，这个很容易被误解。<br>第二个NaN从字面上看应该是”Not a Number”, 但是ECMA Spec对 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-4.3.20" target="_blank" rel="noopener">Number type</a> 定义为<code>set of all possible Number values including the special “Not-a-Number” (NaN) values, positive infinity, and negative infinity</code> , 所以NaN、Number.NEGATIVE_INFINITY、Number.POSITIVE_INFINITY都是Number类型的。<br>第三个NaN === NaN表面上看起来应该是相等的，但是ECMA上对严格相等 <a href="http://www.ecma-international.org/ecma-262/5.1/#sec-11.9.6" target="_blank" rel="noopener">The Strict Equality Comparison Algorithm</a> 定义中有<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">If Type(x) is Number, then</span><br><span class="line">If x is NaN, return false.</span><br><span class="line">If y is NaN, return false.</span><br><span class="line">If x is the same Number value as y, return true.</span><br><span class="line">If x is +0 and y is −0, return true.</span><br><span class="line">If x is −0 and y is +0, return true.</span><br><span class="line">Return false.</span><br></pre></td></tr></table></figure></p>
+<p>由于NaN类型是Number，可见不管任何数与NaN相比较，均会返回false。</p>
+<h3 id="4-String字面量的instanceof"><a href="#4-String字面量的instanceof" class="headerlink" title="4. String字面量的instanceof"></a>4. String字面量的instanceof</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"string"</span> <span class="keyword">instanceof</span> <span class="built_in">String</span>;	<span class="comment">//false</span></span><br><span class="line"><span class="keyword">var</span> string = <span class="keyword">new</span> <span class="built_in">String</span>(<span class="string">'string'</span>);</span><br><span class="line">string <span class="keyword">instanceof</span> <span class="built_in">String</span>;	<span class="comment">//true</span></span><br></pre></td></tr></table></figure>
+<p>JavaScript中字符串分两种，一种是字面量的，一种是Object的，对于字面量的字符串，并不是String的instance。 所以通常判断类型是不是字符串通常使用<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typeof</span>(s) === <span class="string">'string'</span> || s <span class="keyword">instanceof</span> <span class="built_in">String</span>;</span><br><span class="line"><span class="comment">//或者</span></span><br><span class="line"><span class="string">'string'</span>.constructor === <span class="built_in">String</span>;</span><br></pre></td></tr></table></figure></p>
+<h3 id="5-的一些问题"><a href="#5-的一些问题" class="headerlink" title="5. ==的一些问题"></a>5. ==的一些问题</h3><p>JavaScript推荐使用严格相等<code>===</code> , 因为非严格相等经常会出现一些问题</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">undefined</span> == <span class="literal">null</span> <span class="comment">//true</span></span><br><span class="line"><span class="string">""</span> == <span class="literal">false</span>; <span class="comment">// true </span></span><br><span class="line">[] == <span class="literal">false</span>; <span class="comment">// true</span></span><br><span class="line">[] == ![];	<span class="comment">//true</span></span><br><span class="line"><span class="literal">null</span> == <span class="literal">false</span>; <span class="comment">// false</span></span><br><span class="line"><span class="literal">null</span> == <span class="literal">true</span>; <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>对于第一行从上面第二条非严格相等的规则中可以知道是true。<br>对于<code>&quot;&quot; == false</code> 由于Type(y) 是Boolean， 所以转换成Number， 即<code>0</code> ，此时由于Type(x)是String，所以根据规则，会转换成Number，即 <code>0</code> 从而得到相等。</p>
+<p>对于<code>[] == false</code> 比较复杂， 首先是<code>Type(y)</code> 是<code>Boolean</code>，转换成数字<code>0</code>, 由于<code>Type(x)</code>是<code>Object</code>，此时的<code>Type(y)</code>是<code>Number</code>，所以执行<code>ToPrimitive(x)</code></p>
+<p><code>ToPrimitive</code>规则如下</p>
+<blockquote>
+<p>ToPrimitive(input, PreferredType?)</p>
+</blockquote>
+<p>PreferredType 可以是Number和String, 代表一个转换的偏好，结果不一定是该类型的，但是结果一定是一个原始类型的值。 如果PreferredType是Number会按照如下规则</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">如果输入的值已经是个原始值,则直接返回它.</span><br><span class="line">否则,如果输入的值是一个对象.则调用该对象的valueOf()方法.如果valueOf()方法的返回值是一个原始值,则返回这个原始值.</span><br><span class="line">否则,调用这个对象的toString()方法.如果toString()方法的返回值是一个原始值,则返回这个原始值.</span><br><span class="line">否则,抛出<span class="built_in">TypeError</span>异常.</span><br></pre></td></tr></table></figure>
+<p>如果是String，那么二三行会互换。如果没有的话，对于Date类型的对象会被设置成String，其它类型的会被设置成Number。</p>
+<p>由于<code>[].valueOf()</code> 依旧是<code>[]</code> , 所以会执行<code>toString()</code>方法转换成空字符串。<br>所以相当于比较<code>&quot;&quot; == 0</code> 从而得到相等。</p>
+<p>对于<code>[] == ![]</code> 情况和上面一样，相当于比较<code>[] == false</code>.</p>
+<p>对于<code>null == true</code> 和 <code>null == false</code> 只能匹配到<code>Type(y)</code> 是<code>Boolean</code>这条，转换成数字，之后再没有规则能转换了，只能<code>return false</code>。</p>
+
+    </div>
+  </div>
+  
+    <div class="copy-right">
+      <div class="markdown-body">
+        <blockquote>
+        
+        
+          本文作者 : Shuai Liang <br>
+        
+        原文链接 : <a href="">http://liangshuai.me/2016/06/07/wtf-javascript/</a><br>
+        版权声明 : 本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！
+        </blockquote>
+      </div>
+    </div>
+  
+  
+  
+    <div class="social-share" style="margin-top: -2rem" data-wechat-qrcode-title="<p>微信扫一扫</p>" data-wechat-qrcode-helper="<p>微信右上角, 扫一扫分享</p>" data-sites="qzone, qq, weibo, wechat, douban, google, facebook, twitter">
+  <span style="color: #6b7487; font-size: 1.4rem;">分享到: </span>
+</div>
+<script src="https://cdn.bootcss.com/social-share.js/1.0.16/js/social-share.min.js" async></script>
+  
+
+  
+    <div id="reward">
+  
+    <p id="reward-meta">知识 & 情怀 | 二者兼得</p>
+  
+  <button id="reward-btn">
+    
+    <span>打赏</span>
+  </button>
+  <div id="reward-qrcode">
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/wechat.png" alt="微信扫一扫, 向我投食">
+        <p class="qrcode-meta">微信扫一扫, 向我投食</p>
+      </div>
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/alipay.png" alt="支付宝扫一扫, 向我投食">
+        <p class="qrcode-meta">支付宝扫一扫, 向我投食</p>
+      </div>
+    
+  </div>
+
+</div>
+
+<script>
+  (() => {
+    let button = document.querySelector('#reward-btn'),
+      qrcode = document.querySelector('#reward-qrcode'),
+      display = false;
+    
+    button.addEventListener('click', () => {
+      qrcode.style.display = display ? 'none' : 'block'
+      display = !display
+    }, false)
+  })()
+</script>
+  
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+      <span>
+        
+          <i class="iconfont icon-06tags"></i>标签: 
+          
+          <span class="span--tag">
+            <a href="/tags/Javascript/">
+              #Javascript
+            </a>
+          </span>
+          
+        
+      </span>
+    </div>
+    <div class="article-meta pull-right">
+    </div>
+  </div>
+</div>
+
+
+
+
+  <nav class="post-navigation">
+    
+      <div class="nav-pre">
+        <i class="iconfont icon-prev"></i>
+        上一篇:
+        <a href="/2016/05/26/css-modules/" target="_self">CSS Modules 简单入门</a>
+      </div>
+    
+    
+      <div class="nav-next">
+        下一篇:
+        <a href="/2016/07/06/zigzag-conversion/" target="_self">LeetCode算法题 -- Zigzag Conversion</a>
+        <i class="iconfont icon-next"></i>
+      </div>
+    
+  </nav>
+
+  
+    <a href="#comment" class="comment-anchor"></a>
+<div class="comment-title"><i class="iconfont icon-footprint"></i> 留下足迹 <i class="iconfont icon-footprint"></i></div>
+<div id="vcomments"></div>
+
+<script defer>
+  if( true ) {
+    let path = getRealPath()
+    new Valine({
+      el: "#vcomments",
+      appId: "YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz",
+      appKey: "pF4kpoD5nxRq1AOLaSxmFwfr",
+      notify: false,
+      verify: false,
+      avatar: "robohash",
+      placeholder: "正确填写邮箱, 才能及时收到回复哦♪(^∇^*)",
+      path
+    });
+  }
+</script>
+   
+
+  
+    <script defer>
+const valineAPI = (() => {
+  try {
+    AV.init("YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz", "pF4kpoD5nxRq1AOLaSxmFwfr");
+  } catch(error) {}
+  const isExist = (identity) => {
+    identity = identity || getRealPath();
+    let query = new AV.Query('Timer');
+    return new Promise((resolve, reject) => {
+      query.equalTo("identity", identity);
+      query.find().then(results => {
+        resolve(results.length > 0);
+      }, error => reject(error));
+    })
+  }
+
+  const _get = (identity) => {
+    let query = null;
+    if(identity && identity instanceof Array){
+      let querys = [];
+      for(let i = 0; i < identity.length; ++i) {
+        querys[i] = new AV.Query('Timer');
+        querys[i].equalTo('identity', identity[i]);
+      }
+      query = AV.Query.or.apply(null ,querys);
+    } else {
+      identity = identity || getRealPath();
+      query = new AV.Query("Timer");
+      query.equalTo("identity", identity);
+    }
+
+    return new Promise((resolve, reject) => {
+      query.find()
+      .then(results => resolve(results))
+      .catch(error => reject(error))
+    })
+  }
+
+  const create = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let Todo = AV.Object.extend('Timer');
+      let todo = new Todo();
+      todo.set("times", 1);
+      todo.set("identity", identity);
+      todo.save().then(res => resolve(true), error => reject(error));
+    })
+  }
+
+  const update = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let query = new AV.Query('Timer');
+      query.equalTo("identity", identity);
+      query.find().then(todos => {
+        todos.forEach(todo => {
+          todo.set("times", todo.attributes.times + 1);
+        });
+        return AV.Object.saveAll(todos);
+      }).then(todos => resolve(true), error => reject(error));
+    })
+  }
+
+  return {
+    isExist,
+    _get,
+    update,
+    create
+  }
+})()
+
+const calcAndWriteTimes = () => {
+  let isPost = true;
+
+  let timerAllDOM = document.querySelectorAll(".article-timer");
+
+  if(isPost) {
+    let identity = timerAllDOM[0].getAttribute("data-identity");
+    valineAPI.isExist(identity)
+    .then(exist => {
+      if(exist) {
+        return valineAPI.update(identity);
+      }
+      return new Promise(resolve => resolve(true));
+    })
+    .then( succuess => valineAPI._get(identity))
+    .then( result => timerAllDOM[0].innerText = result[0].attributes.times)
+    .catch(error => console.log(error.message))
+    return ;
+  }
+
+  let timerDOMCache = {};
+
+  for(let timerDOM of timerAllDOM) {
+    let identity = timerDOM.getAttribute("data-identity");
+    if(timerDOMCache.hasOwnProperty(identity)){
+      timerDOMCache[identity].dom.push(timerDOM);
+    }else{
+      timerDOMCache[identity] = {
+        dom: [timerDOM],
+        times: undefined
+      };
+    }
+  }
+
+  let identities = Object.keys(timerDOMCache);
+  valineAPI._get(identities).then(results => {
+    for(let result of results) {
+      let {identity, times} = result.attributes;
+      timerDOMCache[identity].times = times;
+      timerDOMCache[identity].dom.map(item => item.innerText = times);
+    }
+    for(let identity of identities) {
+      if(timerDOMCache[identity].times){
+        continue;
+      }
+      timerDOMCache[identity].dom.map(item => item.innerText = 1);
+      valineAPI.create(identity);
+    }
+  }).catch(error => console.log(error.message))
+}
+
+if(true){
+  calcAndWriteTimes();
+}
+</script>
+   
+
+</div>
+
+
+      <footer>
+  <p class="site-info">
+    Theme - <a href="https://github.com/dongyuanxin/theme-bmw">BMW</a> | Made With 💗 | Powered by <a href="https://godbmw.com/">GodBMW</a>
+    <br>
+    
+  </p>
+</footer>
+
+
+      <div class="back-to-top hidden">
+  <span>
+    <i class="iconfont icon-60"></i><span></span>%
+  </span>
+</div>
+
+<script>
+const updateIconToTop = percent => {
+  let dom = document.querySelector(".back-to-top span span");
+  dom.innerText = percent;
+  if(percent < 1) {
+    document.querySelector(".back-to-top").className = "back-to-top hidden";
+  } else {
+    document.querySelector(".back-to-top").className = "back-to-top";
+  }
+}
+
+const handleScoll = () => {
+  let isRunning = false;
+  return () => {
+    if (isRunning) return;
+    isRunning = true;
+    window.requestAnimationFrame(timestamp => {
+      let scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop,
+        scrollHeight =
+          document.documentElement.scrollHeight ||
+          document.body.scrollHeight,
+        clientHeight =
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      isRunning = false;
+      if (scrollTop <= 1) {
+        updateIconToTop(0);
+        return;
+      }
+      if (scrollTop + clientHeight >= scrollHeight) {
+        updateIconToTop(100);
+      } else {
+        updateIconToTop(parseInt(
+          100 * scrollTop / (scrollHeight - clientHeight),
+          10
+        ));
+      }
+    });
+  };
+}
+
+const backToTop = () => {
+  let scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop,
+    delay = 10,
+    time = 200;
+  if (scrollTop <= 20) {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  let step = Math.ceil(scrollTop * delay / time);
+  let timer = setInterval(() => {
+    scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop - step <= 0) {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      clearInterval(timer);
+    } else {
+      document.documentElement.scrollTop = scrollTop - step;
+      document.body.scrollTop = scrollTop - step;
+    }
+  }, delay);
+}
+
+document.addEventListener("scroll", handleScoll(), false);
+
+document.querySelector(".back-to-top").addEventListener("click", backToTop, false);
+
+</script>
+
+    </div>
+
+    
+
+    <script src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script>
+<script async>
+  let fancyTimer = setInterval(function(){
+    if(!window.$){
+      return;
+    }
+    $(document).ready(function() {
+      $(".post img").each(function () {
+        if($(this).parent().get(0).tagName.toLowerCase() === "a") {
+          return;
+        }
+        // $(this).attr("data-fancybox", "gallery"); // if you add 'data-fancybox', img will display after showed
+        var element = document.createElement("a");
+        $(element).attr("data-fancybox", "gallery");
+        $(element).attr("href", $(this).attr("src"));
+        $(this).wrap(element);
+      });
+      
+      clearInterval(fancyTimer);
+    });
+  }, 10);
+</script>
+
+    
+  </body>
+
+</html>

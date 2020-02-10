@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  <title>梁帅的博客</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="梁帅の博客">
+  
+
+  
+
+  
+
+  
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="apple-touch-icon" href="/img/favicon.ico">
+  
+
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/icon/iconfont.css">
+<link rel="stylesheet" href="/css/github-markdown.css">
+<link rel="stylesheet" href="/css/highlight.css">
+
+  <script src="/js/util.js"></script>
+<script src="/js/valine.min.js"></script>
+
+  
+
+  
+
+  
+    <link href="https://cdn.bootcss.com/social-share.js/1.0.16/css/share.min.css" rel="stylesheet">
+  
+  
+  <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js" async></script>
+  
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.0/dist/av-min.js"></script>
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <div id="app">
+
+      <div class="header-wrap">
+  <header>
+    <div class="site-brand">
+      <div class="site-title">
+        <a href="/">梁帅の博客</a>
+      </div>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav-menu">
+      
+        <li class="nav-item" data-path="/">
+          
+            <a href="/" target="_self">
+              主页
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          
+            <a href="/archives/" target="_self">
+              归档
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          
+            <a href="/tags/" target="_self">
+              标签
+            </a>
+          
+        </li>
+      
+      </ul>
+    </nav>
+    <i class="iconfont icon-menu"></i>
+  </header>
+</div>
+
+<script>
+  let links = document.querySelectorAll('.nav-item');
+  for(let link of links){
+    let childrenLink = link.querySelector('ul');
+    link.addEventListener('mouseenter', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown active";
+      }
+    })
+    link.addEventListener('mouseleave', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown";
+      }
+    })
+  }
+  let rootRealPath = getRealPath(window.location.pathname, true);
+  for(let link of links) {
+    let linkPath = link.getAttribute("data-path");
+    if(linkPath && getRealPath(linkPath, true) === rootRealPath) {
+      link.className = "nav-item hover";
+    }
+  }
+
+  let iconMenu = document.querySelector("i.iconfont.icon-menu"),
+    iconMenuClicked = false;
+  let navDOM = document.querySelector("nav.site-navigation");
+  iconMenu.addEventListener("click", () => {
+    iconMenuClicked 
+      ? navDOM.className = "site-navigation active"
+      : navDOM.className = "site-navigation";
+    iconMenuClicked = !iconMenuClicked;
+  })
+</script>
+
+      
+<div class="container home-index">
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2018/12/17/yuque/npm publish如何过滤掉部分文件/">
+        <span>npm publish如何过滤掉部分文件</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2018-12-17
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2018-12-17
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="npm publish如何过滤掉部分文件"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p><code>npm publish</code> 的时候会把当前目录里面所有的文件都publish到npm仓库中， 但是往往有一部分目录和文件不想发布上去， 比如项目的源码、 <code>.editorconfig</code> 、 <code>tslint.json</code> 、 编译脚本等等信息， 发布出去对用户来说可能也没太大作用， 完全可以不发布这部分， 仅仅发布那些用户需要使用的相关文件， 那么该如何做呢？<br>
+      </p></div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/npm/">
+                  #npm
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="npm publish如何过滤掉部分文件"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2018/12/14/yuque/JavaScript中for-in 和 for-of的区别/">
+        <span>JavaScript中for-in 和 for-of的区别</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2018-12-14
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2018-12-14
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="JavaScript中for-in 和 for-of的区别"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>JS里面做循环最普通的是绝大多数编程语言都有的 <code>for ([initialization]; [condition]; [final-expression])</code> , 比如我们遍历一个数组可能会这样写<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, len = arr.length; i &lt; len; i++) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看出来这样写写法上比较复杂， 需要计算length<br>
+      </p></div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/JavaScript/">
+                  #JavaScript
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="JavaScript中for-in 和 for-of的区别"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2018/12/11/yuque/HTTP仅指定Last-Modified和Date的缓存策略/">
+        <span>HTTP仅指定Last-Modified和Date的缓存策略</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2018-12-11
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2018-12-11
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="HTTP仅指定Last-Modified和Date的缓存策略"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>最近一个系统新版本上线之后，有用户反馈接口出现异常， 看了一下发现调用的接口是之前旧版本的， 在新版本中对该接口地址做了修改， 原有的旧接口已经不能使用了。 初步怀疑是缓存设置出了问题。<br>先去看了一下HTML中引用的资源文件名称是否打了Hash以及Hash新旧版本是否有变化，<br>
+      </p></div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Cache/">
+                  #Cache
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/HTTP/">
+                  #HTTP
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Cache-Control/">
+                  #Cache-Control
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="HTTP仅指定Last-Modified和Date的缓存策略"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2018/08/16/cannot_start_elasticsearch_on_windows/">
+        <span>Windows运行ElasticSearch.bat出错问题解决方案</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2018-08-16
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2018-08-16
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="cannot_start_elasticsearch_on_windows"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>在Windows上下载了ElasticSearch的zip包， 解压之后命令行进入bin目录， 运行elasticsearch， 不能够成功运行<br>提示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\Java\jdk1.8.0_151\bin\java.exe&quot; -cp &quot;C:\Users\&lt;User Name&gt;\App\elasticsearch-6.2.0\lib*&quot; &quot;org.elasticsearch.tools.launchers.JvmOptionsParser&quot; &quot;C:\Users\&lt;User Name&gt;\App\elasticsearch-6.2.0\config\jvm.options&quot; || echo jvm_options_parser_failed&quot;`) was unexpected at this time.</span><br></pre></td></tr></table></figure>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Windows/">
+                  #Windows
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/ElasticSearch/">
+                  #ElasticSearch
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="cannot_start_elasticsearch_on_windows"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2017/03/22/access-gist-content/">
+        <span>墙内查看Github Gist内容</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2017-03-22
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2017-03-22
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="access-gist-content"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <h2 id="命令行查看"><a href="#命令行查看" class="headerlink" title="命令行查看"></a>命令行查看</h2><p>公司电脑不方便翻墙， 但是遇到个问题，正好Gist上有人演示怎么解决这个问题， 可是没有办法直接看到，想了想，之前用过C9提供的在线IDE， 环境位于墙外， 这个IDE自带terminal正好可以拿来用一用,<br>先需要去<a href="https://c9.io/" target="_blank" rel="noopener">https://c9.io/</a> 登录，直接使用Github账号就可以， 登录了创建Workspace， 进入workspace后就能看到下方的Terminal<br>
+      </p></div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Gist/">
+                  #Gist
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Github/">
+                  #Github
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="access-gist-content"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2016/12/01/exploring-bigpipe/">
+        <span>探索Bigpipe</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2016-12-01
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2016-12-01
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="exploring-bigpipe"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>网站加载速度的快慢对用户体验是否良好起着至关重要的作用，据研究</p>
+<blockquote>
+<p>页面加载时间每增加1s，就会导致浏览量降低11%，客户满意度下降16%，转换率损失7%<br>如果3秒内，网页还未加载完毕，57%的用户会放弃<br>每延长1秒，亚马逊一年就会减少16亿美元销售额<br>74%的用户登录某网站时间超过5秒后就不会再登录这个网站<br>60%的用户希望手机上的页面加载时间不要超过3秒</p>
+</blockquote>
+<p>由此可见 ，网页加载速度是多么的重要。页面加载速度的优化有很多种途径，本文探讨一下FaceBook提出的<code>Bigpipe技术</code>，该技术对于比较复杂的页面具有非常明显的作用。<br>
+      </p></div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Bigpipe/">
+                  #Bigpipe
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Node-js/">
+                  #Node.js
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Koa/">
+                  #Koa
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Async/">
+                  #Async
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="exploring-bigpipe"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2016/08/10/javascript-tips/">
+        <span>JavaScript一些实用的技巧</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2016-08-10
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2016-08-10
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="javascript-tips"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>最近看了很多开源项目的源码，感觉学到了不少东西，也学到了很多比较碎的技巧。JavaScript小技巧实在是太多，把这些小技巧和之前知道的一起总结一下，并且持续更新，权当是备忘。</p>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/JavaScript/">
+                  #JavaScript
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="javascript-tips"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2016/08/06/debug-dynamically-loaded-javascript/">
+        <span>Chrome调试动态创建的JS</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2016-08-06
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2016-08-06
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="debug-dynamically-loaded-javascript"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>Chrome开发者工具的Debug在开发JS时非常有用， 可是现在越来越多的JS框架都会在运行时动态添加或加载JS脚本， 比如很多JS模板引擎， 就可能添加生成的JS文件，这个时候调试起来并不像普通JS那样直接在Chrome Developer Tools 的<code>Sources</code> Tab下面直接看到，造成调试脚本的不便。</p>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Chrome/">
+                  #Chrome
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/JavaScript/">
+                  #JavaScript
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Debug/">
+                  #Debug
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="debug-dynamically-loaded-javascript"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2016/07/06/zigzag-conversion/">
+        <span>LeetCode算法题 -- Zigzag Conversion</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2016-07-06
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2016-07-06
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="zigzag-conversion"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>原题：</p>
+<p>The string “PAYPALISHIRING” is written in a zigzag pattern on a given number of rows like this: (you may want to display this pattern in a fixed font for better legibility)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">P   A   H   N</span><br><span class="line">A P L S I I G</span><br><span class="line">Y   I   R</span><br></pre></td></tr></table></figure>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Leetcode/">
+                  #Leetcode
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Algorithm/">
+                  #Algorithm
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Zigzag/">
+                  #Zigzag
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="zigzag-conversion"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2016/06/07/wtf-javascript/">
+        <span>JavaScript的一些坑</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2016-06-07
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2016-06-07
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="wtf-javascript"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>JavaScript作为一门同时结合了函数式编程和面向对象编程的语言，使用起来非常的宽松灵活。但是由于其诞生之初仓促的设计(<a href="http://www.ruanyifeng.com/blog/2011/06/birth_of_javascript.html" target="_blank" rel="noopener">Javascript诞生记</a>) 、设计之初并没有同时结合函数式编程和面向对象编程的先例、过早标准化等问题，导致使用过程中经常会遇到各种问题。本文总结一些问题，部分是可能语言上的缺陷，也有部分属于用法的问题。</p>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Javascript/">
+                  #Javascript
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="wtf-javascript"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+
+  <nav class="page-navigation">
+    
+    
+      <a href="/page/2/">下一页</a>
+    
+  </nav>
+
+  
+    <script defer>
+const valineAPI = (() => {
+  try {
+    AV.init("YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz", "pF4kpoD5nxRq1AOLaSxmFwfr");
+  } catch(error) {}
+  const isExist = (identity) => {
+    identity = identity || getRealPath();
+    let query = new AV.Query('Timer');
+    return new Promise((resolve, reject) => {
+      query.equalTo("identity", identity);
+      query.find().then(results => {
+        resolve(results.length > 0);
+      }, error => reject(error));
+    })
+  }
+
+  const _get = (identity) => {
+    let query = null;
+    if(identity && identity instanceof Array){
+      let querys = [];
+      for(let i = 0; i < identity.length; ++i) {
+        querys[i] = new AV.Query('Timer');
+        querys[i].equalTo('identity', identity[i]);
+      }
+      query = AV.Query.or.apply(null ,querys);
+    } else {
+      identity = identity || getRealPath();
+      query = new AV.Query("Timer");
+      query.equalTo("identity", identity);
+    }
+
+    return new Promise((resolve, reject) => {
+      query.find()
+      .then(results => resolve(results))
+      .catch(error => reject(error))
+    })
+  }
+
+  const create = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let Todo = AV.Object.extend('Timer');
+      let todo = new Todo();
+      todo.set("times", 1);
+      todo.set("identity", identity);
+      todo.save().then(res => resolve(true), error => reject(error));
+    })
+  }
+
+  const update = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let query = new AV.Query('Timer');
+      query.equalTo("identity", identity);
+      query.find().then(todos => {
+        todos.forEach(todo => {
+          todo.set("times", todo.attributes.times + 1);
+        });
+        return AV.Object.saveAll(todos);
+      }).then(todos => resolve(true), error => reject(error));
+    })
+  }
+
+  return {
+    isExist,
+    _get,
+    update,
+    create
+  }
+})()
+
+const calcAndWriteTimes = () => {
+  let isPost = false;
+
+  let timerAllDOM = document.querySelectorAll(".article-timer");
+
+  if(isPost) {
+    let identity = timerAllDOM[0].getAttribute("data-identity");
+    valineAPI.isExist(identity)
+    .then(exist => {
+      if(exist) {
+        return valineAPI.update(identity);
+      }
+      return new Promise(resolve => resolve(true));
+    })
+    .then( succuess => valineAPI._get(identity))
+    .then( result => timerAllDOM[0].innerText = result[0].attributes.times)
+    .catch(error => console.log(error.message))
+    return ;
+  }
+
+  let timerDOMCache = {};
+
+  for(let timerDOM of timerAllDOM) {
+    let identity = timerDOM.getAttribute("data-identity");
+    if(timerDOMCache.hasOwnProperty(identity)){
+      timerDOMCache[identity].dom.push(timerDOM);
+    }else{
+      timerDOMCache[identity] = {
+        dom: [timerDOM],
+        times: undefined
+      };
+    }
+  }
+
+  let identities = Object.keys(timerDOMCache);
+  valineAPI._get(identities).then(results => {
+    for(let result of results) {
+      let {identity, times} = result.attributes;
+      timerDOMCache[identity].times = times;
+      timerDOMCache[identity].dom.map(item => item.innerText = times);
+    }
+    for(let identity of identities) {
+      if(timerDOMCache[identity].times){
+        continue;
+      }
+      timerDOMCache[identity].dom.map(item => item.innerText = 1);
+      valineAPI.create(identity);
+    }
+  }).catch(error => console.log(error.message))
+}
+
+if(true){
+  calcAndWriteTimes();
+}
+</script>
+   
+</div>
+
+
+      <footer>
+  <p class="site-info">
+    Theme - <a href="https://github.com/dongyuanxin/theme-bmw">BMW</a> | Made With 💗 | Powered by <a href="https://godbmw.com/">GodBMW</a>
+    <br>
+    
+  </p>
+</footer>
+
+
+      <div class="back-to-top hidden">
+  <span>
+    <i class="iconfont icon-60"></i><span></span>%
+  </span>
+</div>
+
+<script>
+const updateIconToTop = percent => {
+  let dom = document.querySelector(".back-to-top span span");
+  dom.innerText = percent;
+  if(percent < 1) {
+    document.querySelector(".back-to-top").className = "back-to-top hidden";
+  } else {
+    document.querySelector(".back-to-top").className = "back-to-top";
+  }
+}
+
+const handleScoll = () => {
+  let isRunning = false;
+  return () => {
+    if (isRunning) return;
+    isRunning = true;
+    window.requestAnimationFrame(timestamp => {
+      let scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop,
+        scrollHeight =
+          document.documentElement.scrollHeight ||
+          document.body.scrollHeight,
+        clientHeight =
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      isRunning = false;
+      if (scrollTop <= 1) {
+        updateIconToTop(0);
+        return;
+      }
+      if (scrollTop + clientHeight >= scrollHeight) {
+        updateIconToTop(100);
+      } else {
+        updateIconToTop(parseInt(
+          100 * scrollTop / (scrollHeight - clientHeight),
+          10
+        ));
+      }
+    });
+  };
+}
+
+const backToTop = () => {
+  let scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop,
+    delay = 10,
+    time = 200;
+  if (scrollTop <= 20) {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  let step = Math.ceil(scrollTop * delay / time);
+  let timer = setInterval(() => {
+    scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop - step <= 0) {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      clearInterval(timer);
+    } else {
+      document.documentElement.scrollTop = scrollTop - step;
+      document.body.scrollTop = scrollTop - step;
+    }
+  }, delay);
+}
+
+document.addEventListener("scroll", handleScoll(), false);
+
+document.querySelector(".back-to-top").addEventListener("click", backToTop, false);
+
+</script>
+
+    </div>
+
+    
+
+    <script src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script>
+<script async>
+  let fancyTimer = setInterval(function(){
+    if(!window.$){
+      return;
+    }
+    $(document).ready(function() {
+      $(".post img").each(function () {
+        if($(this).parent().get(0).tagName.toLowerCase() === "a") {
+          return;
+        }
+        // $(this).attr("data-fancybox", "gallery"); // if you add 'data-fancybox', img will display after showed
+        var element = document.createElement("a");
+        $(element).attr("data-fancybox", "gallery");
+        $(element).attr("href", $(this).attr("src"));
+        $(this).wrap(element);
+      });
+      
+      clearInterval(fancyTimer);
+    });
+  }, 10);
+</script>
+
+    
+  </body>
+
+</html>

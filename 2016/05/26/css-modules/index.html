@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  <title>CSS Modules 简单入门 | 梁帅的博客</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="CSS,Web组件,CSS Modules,">
+  
+
+  
+
+  
+
+  
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="apple-touch-icon" href="/img/favicon.ico">
+  
+
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/icon/iconfont.css">
+<link rel="stylesheet" href="/css/github-markdown.css">
+<link rel="stylesheet" href="/css/highlight.css">
+
+  <script src="/js/util.js"></script>
+<script src="/js/valine.min.js"></script>
+
+  
+
+  
+
+  
+    <link href="https://cdn.bootcss.com/social-share.js/1.0.16/css/share.min.css" rel="stylesheet">
+  
+  
+  <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js" async></script>
+  
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.0/dist/av-min.js"></script>
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <div id="app">
+
+      <div class="header-wrap">
+  <header>
+    <div class="site-brand">
+      <div class="site-title">
+        <a href="/">梁帅の博客</a>
+      </div>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav-menu">
+      
+        <li class="nav-item" data-path="/">
+          
+            <a href="/" target="_self">
+              主页
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          
+            <a href="/archives/" target="_self">
+              归档
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          
+            <a href="/tags/" target="_self">
+              标签
+            </a>
+          
+        </li>
+      
+      </ul>
+    </nav>
+    <i class="iconfont icon-menu"></i>
+  </header>
+</div>
+
+<script>
+  let links = document.querySelectorAll('.nav-item');
+  for(let link of links){
+    let childrenLink = link.querySelector('ul');
+    link.addEventListener('mouseenter', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown active";
+      }
+    })
+    link.addEventListener('mouseleave', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown";
+      }
+    })
+  }
+  let rootRealPath = getRealPath(window.location.pathname, true);
+  for(let link of links) {
+    let linkPath = link.getAttribute("data-path");
+    if(linkPath && getRealPath(linkPath, true) === rootRealPath) {
+      link.className = "nav-item hover";
+    }
+  }
+
+  let iconMenu = document.querySelector("i.iconfont.icon-menu"),
+    iconMenuClicked = false;
+  let navDOM = document.querySelector("nav.site-navigation");
+  iconMenu.addEventListener("click", () => {
+    iconMenuClicked 
+      ? navDOM.className = "site-navigation active"
+      : navDOM.className = "site-navigation";
+    iconMenuClicked = !iconMenuClicked;
+  })
+</script>
+
+      
+
+
+
+
+
+
+
+
+<div class="container post-index">
+
+  
+
+<div class="post">
+  <h1 class="article-title">
+    <span>CSS Modules 简单入门</span>
+  </h1>
+  <div class="article-top-meta">
+    <span>
+      发布 : 
+      2016-05-26
+    </span>
+    
+    
+      <span>
+        浏览 : <span class="article-timer" data-identity="css-modules"></span>
+      </span>
+    
+  </div>
+
+  
+
+  <div class="article-content">
+    <div class="markdown-body">
+      <p>CSS的选择器在全局范围都会生效，比如有时候会有A写了 <code>btn</code> 的class定义了一个默认显示蓝色按钮， B之后不小心也写了一个 <code>btn</code> 的class， 很不幸，A需要的按钮样式可能被B所写的样式覆盖！ Bootstrap中的类似btn这种情况，在 <code>btn</code> 的class 通常定义的是所有按钮通用的样式，并且通过在定义 <code>btn-success</code>、<code>btn-error</code> 等样式通过选择器优先级来实现不同的样式。但是这种依旧相当于在全局中定义了样式， 无法避免将来有人不经意的又写了<code>btn-success</code>这样的class覆盖或者影响了之前的样式。</p>
+<p>为了解决这问题，前端大牛们提出了种种的命名约定来避免命名冲突。 比如<a href="http://oocss.org/" target="_blank" rel="noopener">OOCSS</a>、<a href="https://smacss.com/" target="_blank" rel="noopener">SMACSS</a>、<a href="https://en.bem.info/methodology/naming-convention/" target="_blank" rel="noopener">BEM</a>、<a href="https://suitcss.github.io/" target="_blank" rel="noopener">SUIT</a>等等。 以BEM为例，class的名字以<code>block__element--modifier</code>这种方式来命名，比如写个Menu， 那么Menu中的item处于active状态就要命名成 <code>menu__item--active</code> 这样的写法可能会解决问题，但是写起来总感觉有些反人类。所以有人说<a href="http://weibo.com/1960954893/Ac2LAgIjn?type=comment" target="_blank" rel="noopener">BEM很火,看着就想吐</a> . 并没有在项目中实践BEM这种命名方式，但是它来解决命名冲突的思路还是挺不错的，相当于通过模块命名前缀的方式避开在全局空间下命名，每个组件在它所属的命名空间下定义。</p>
+<a id="more"></a>
+<p>直到2014年Christopher Chedeau 在NationJS中所讲的<a href="http://blog.vjeux.com/2014/javascript/react-css-in-js-nationjs.html" target="_blank" rel="noopener">CSS in JS</a>, 前端衍生出两个流派，一个主张彻底抛弃CSS，在JS中来写样式，并且从中衍生出<a href="https://github.com/js-next/react-style" target="_blank" rel="noopener">React Style</a>、 <a href="https://github.com/petehunt/jsxstyle" target="_blank" rel="noopener">jsxstyle</a>、 <a href="https://github.com/FormidableLabs/radium" target="_blank" rel="noopener">Radium</a>等实现。</p>
+<p>CSS in JS 好处虽多，但是也有一些不便之处，比如无法使用css预处理器、调试困难、无法使用像PostCSS这样的CSS常用工具等。</p>
+<p>在此基础上<a href="https://github.com/orgs/css-modules/people" target="_blank" rel="noopener">CSS Modules Team</a> 提出的CSS Modules显的更加实用，我们还可以独立的写CSS文件，通过JS来管理样式依赖。</p>
+<p>最近使用Mithril.js写了个<a href="https://github.com/liangshuai/git-history" target="_blank" rel="noopener">小项目</a> 并且尝试实践CSS Modules ，最终的效果如下:</p>
+<p>文件结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">+---components</span><br><span class="line">|   +---LeftBar</span><br><span class="line">|   |       LeftBar.css</span><br><span class="line">|   |       LeftBar.js</span><br><span class="line">|   +---Nav</span><br><span class="line">|   |       Nav.css</span><br><span class="line">|   |       Nav.js</span><br><span class="line">|   +---...</span><br></pre></td></tr></table></figure>
+<p>像写普通CSS一样写CSS文件，以Nav.css为例(CSS Modules 推荐驼峰式命名)</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.list</span> &#123;</span><br><span class="line">    <span class="attribute">margin</span>: <span class="number">0</span>;</span><br><span class="line">    <span class="attribute">padding</span>: <span class="number">3px</span> <span class="number">10px</span>;</span><br><span class="line">    <span class="attribute">list-style</span>: none;</span><br><span class="line">    <span class="attribute">line-height</span>: <span class="number">1.5</span>;</span><br><span class="line">    <span class="attribute">color</span>: <span class="number">#9c9c9c</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.item</span> &#123;</span><br><span class="line">    <span class="attribute">margin</span>: <span class="number">0</span>;</span><br><span class="line">    <span class="attribute">display</span>: inline-block;</span><br><span class="line">    <span class="attribute">position</span>: relative;</span><br><span class="line">    <span class="attribute">margin-left</span>: <span class="number">20px</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在JavaScript中引用css文件，并且定义元素的class。这里使用了<a href="https://webpack.github.io/" target="_blank" rel="noopener">Webpack</a>，<a href="http://browserify.org/" target="_blank" rel="noopener">Browersify</a>也可以实现。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> m <span class="keyword">from</span> <span class="string">'mithril'</span>;</span><br><span class="line"><span class="keyword">import</span> styles <span class="keyword">from</span> <span class="string">'./Nav.css'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> Nav = <span class="built_in">module</span>.exports = &#123;</span><br><span class="line">    controller: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    &#125;,</span><br><span class="line"></span><br><span class="line">    view: <span class="function"><span class="keyword">function</span>(<span class="params">ctrl</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> m(<span class="string">"nav"</span>, &#123;<span class="attr">class</span>: styles.nav&#125;, [</span><br><span class="line">            m(<span class="string">"ul"</span>, &#123;<span class="attr">class</span>: styles.list&#125;, [</span><br><span class="line">                m(<span class="string">'li'</span>, &#123;<span class="attr">class</span>: styles.item&#125;, [</span><br><span class="line">                    m(<span class="string">'i.fa.fa-folder-o'</span>),</span><br><span class="line">                    <span class="string">'Git History'</span></span><br><span class="line">                ]),</span><br><span class="line">                m(<span class="string">'li'</span>, &#123;<span class="attr">class</span>: styles.item&#125;, [</span><br><span class="line">                    m(<span class="string">'i.fa.fa-file-text-o'</span>),</span><br><span class="line">                    <span class="string">'index.js'</span></span><br><span class="line">                ])</span><br><span class="line">            ])</span><br><span class="line">        ]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>最终生成的效果如下：</p>
+<p><img src="https://ooo.0o0.ooo/2017/03/04/58ba0a05b9c87.png" alt="CSS Module Screenshot"></p>
+<p>其中生成的Class Name依赖于具体的配置规则，示例中的WebPack Loader配置如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">loaders: [</span><br><span class="line">  &#123; <span class="attr">test</span>: <span class="regexp">/\.js$/</span>, <span class="attr">loader</span>: <span class="string">'babel-loader'</span>, <span class="attr">exclude</span>: <span class="regexp">/node_modules/</span> &#125;,</span><br><span class="line">  &#123; <span class="attr">test</span>: <span class="regexp">/\.css$/</span>, <span class="attr">loader</span>: ExtractTextPlugin.extract(<span class="string">'style-loader'</span>, <span class="string">'css-loader?modules&amp;importLoaders=1&amp;localIdentName=[name]__[local]___[hash:base64:5]!postcss-loader'</span>) &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>CSS文件里面的选择器通过在JS中import之后引用，Webpack会自动处理，这样我们就可以既避免BEM那种反人类的写法，又享受到模块化命名。</p>
+<h3 id="命名方式"><a href="#命名方式" class="headerlink" title="命名方式"></a>命名方式</h3><p>CSS Modules推荐驼峰式命名，但是并不是强制的。需要注意的是在写样式的时候不推荐像Bootstrap那样通过选择器优先级来覆盖，一个Class应该包含该Class所有的样式，这样所有的组件、元素都是相对独立的。以btn的不同状态为例</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* BootStrap是这样实现 */</span></span><br><span class="line"><span class="selector-class">.btn</span> &#123;&#125;</span><br><span class="line"><span class="selector-class">.btn-default</span> &#123;&#125; <span class="comment">/* 在`btn`的基础上定义`default`样式，HTML中需要同时引用 `btn` 和 `btn-default` */</span></span><br><span class="line"><span class="selector-class">.btn-success</span> &#123;&#125; <span class="comment">/* 在`btn`的基础上定义`success`样式，HTML中需要同时引用 `btn` 和 `btn-success` */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* CSS Modules 推荐方式 */</span></span><br><span class="line"></span><br><span class="line"><span class="selector-class">.default</span> &#123;&#125; <span class="comment">/* 包含所有default的样式, html中仅仅引用`default` 的就可以，此处的命名也不用加btn前缀 */</span></span><br><span class="line"><span class="selector-class">.success</span> &#123;&#125; <span class="comment">/* 包含所有success的样式, html中仅仅引用`success` 的就可以 */</span></span><br></pre></td></tr></table></figure>
+<p>CSS Modules组件里面Class命名不需要再加模块名的前缀，一般Webpack/Browserify配置好之后就能自动生成出来，类似BEM那样，模块名通常都以文件名来命名了。</p>
+<h3 id="Composition"><a href="#Composition" class="headerlink" title="Composition"></a>Composition</h3><p>上面说到一个Class应该包含它自身所需要的所有样式，但是并不意味着需要重复大量的代码， 用过Sass的应该比较熟悉@extend，在CSS Modules中也有类似的，叫Composition。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.common</span> &#123;&#125; <span class="comment">/* 定义公用样式 */</span></span><br><span class="line"><span class="selector-class">.default</span>&#123;</span><br><span class="line">    <span class="attribute">composes</span>: common;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.success</span>&#123;</span><br><span class="line">    <span class="attribute">composes</span>: common;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果使用了composes的话，必须在其它样式之前声明，composes也可以声明多个，使用 <code>composes: commonA commonB</code></p>
+<h3 id="Global-范围的样式"><a href="#Global-范围的样式" class="headerlink" title="Global 范围的样式"></a>Global 范围的样式</h3><p>有时候需要写一些全局范围的样式，比如经常使用的clearfix， CSS Modules提供了:global</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-pseudo">:global(.clearfix</span><span class="selector-pseudo">::after)</span> &#123;</span><br><span class="line">    <span class="attribute">content</span>: <span class="string">''</span>;</span><br><span class="line">    <span class="attribute">clear</span>: both;</span><br><span class="line">    <span class="attribute">display</span>: table;</span><br><span class="line">&#125;</span><br><span class="line">//或者这种</span><br><span class="line"><span class="selector-pseudo">:global</span> <span class="selector-class">.clearfix</span> &#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.menu</span><span class="selector-pseudo">:global(.active)</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="依赖管理"><a href="#依赖管理" class="headerlink" title="依赖管理"></a>依赖管理</h3><p>如果需要引入外部文件的样式也可以使用composes</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.default</span>&#123;</span><br><span class="line">    <span class="attribute">composes</span>: common from <span class="string">'../common.css'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="定义变量"><a href="#定义变量" class="headerlink" title="定义变量"></a>定义变量</h3><p>如果使用了postcss和<a href="https://github.com/css-modules/postcss-modules-values" target="_blank" rel="noopener">postcss-modules-values</a> 就可以像Sass/Less一样使用变量</p>
+<p>比如</p>
+<p><em>fontsize.css</em><br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@<span class="keyword">value</span> large: <span class="number">2rem</span>;</span><br><span class="line">@<span class="keyword">value</span> middle: <span class="number">1.5rem</span>;</span><br><span class="line">@<span class="keyword">value</span> small: <span class="number">1rem</span>;</span><br></pre></td></tr></table></figure></p>
+<p><em>Nav.css</em><br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@<span class="keyword">value</span> fontsize: <span class="string">'./fontsize.css'</span>;</span><br><span class="line">@<span class="keyword">value</span> large, middle, small from fontsize;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.list</span> &#123;</span><br><span class="line">    <span class="attribute">font-size</span>: large;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>CSS Modules是目前实现CSS组件化最可行的方案之一，相对于其它实现，学习成本也会小很多，同时也能充分结合CSS生态工具(Sass/Less/Postcss等)和JS模块化能力。</p>
+
+    </div>
+  </div>
+  
+    <div class="copy-right">
+      <div class="markdown-body">
+        <blockquote>
+        
+        
+          本文作者 : Shuai Liang <br>
+        
+        原文链接 : <a href="">http://liangshuai.me/2016/05/26/css-modules/</a><br>
+        版权声明 : 本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！
+        </blockquote>
+      </div>
+    </div>
+  
+  
+  
+    <div class="social-share" style="margin-top: -2rem" data-wechat-qrcode-title="<p>微信扫一扫</p>" data-wechat-qrcode-helper="<p>微信右上角, 扫一扫分享</p>" data-sites="qzone, qq, weibo, wechat, douban, google, facebook, twitter">
+  <span style="color: #6b7487; font-size: 1.4rem;">分享到: </span>
+</div>
+<script src="https://cdn.bootcss.com/social-share.js/1.0.16/js/social-share.min.js" async></script>
+  
+
+  
+    <div id="reward">
+  
+    <p id="reward-meta">知识 & 情怀 | 二者兼得</p>
+  
+  <button id="reward-btn">
+    
+    <span>打赏</span>
+  </button>
+  <div id="reward-qrcode">
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/wechat.png" alt="微信扫一扫, 向我投食">
+        <p class="qrcode-meta">微信扫一扫, 向我投食</p>
+      </div>
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/alipay.png" alt="支付宝扫一扫, 向我投食">
+        <p class="qrcode-meta">支付宝扫一扫, 向我投食</p>
+      </div>
+    
+  </div>
+
+</div>
+
+<script>
+  (() => {
+    let button = document.querySelector('#reward-btn'),
+      qrcode = document.querySelector('#reward-qrcode'),
+      display = false;
+    
+    button.addEventListener('click', () => {
+      qrcode.style.display = display ? 'none' : 'block'
+      display = !display
+    }, false)
+  })()
+</script>
+  
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+      <span>
+        
+          <i class="iconfont icon-06tags"></i>标签: 
+          
+          <span class="span--tag">
+            <a href="/tags/CSS/">
+              #CSS
+            </a>
+          </span>
+          
+          <span class="span--tag">
+            <a href="/tags/Web组件/">
+              #Web组件
+            </a>
+          </span>
+          
+          <span class="span--tag">
+            <a href="/tags/CSS-Modules/">
+              #CSS Modules
+            </a>
+          </span>
+          
+        
+      </span>
+    </div>
+    <div class="article-meta pull-right">
+    </div>
+  </div>
+</div>
+
+
+
+
+  <nav class="post-navigation">
+    
+      <div class="nav-pre">
+        <i class="iconfont icon-prev"></i>
+        上一篇:
+        <a href="/2015/12/29/centos-firewall/" target="_self">CentOS 7开放端口和关闭防火墙</a>
+      </div>
+    
+    
+      <div class="nav-next">
+        下一篇:
+        <a href="/2016/06/07/wtf-javascript/" target="_self">JavaScript的一些坑</a>
+        <i class="iconfont icon-next"></i>
+      </div>
+    
+  </nav>
+
+  
+    <a href="#comment" class="comment-anchor"></a>
+<div class="comment-title"><i class="iconfont icon-footprint"></i> 留下足迹 <i class="iconfont icon-footprint"></i></div>
+<div id="vcomments"></div>
+
+<script defer>
+  if( true ) {
+    let path = getRealPath()
+    new Valine({
+      el: "#vcomments",
+      appId: "YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz",
+      appKey: "pF4kpoD5nxRq1AOLaSxmFwfr",
+      notify: false,
+      verify: false,
+      avatar: "robohash",
+      placeholder: "正确填写邮箱, 才能及时收到回复哦♪(^∇^*)",
+      path
+    });
+  }
+</script>
+   
+
+  
+    <script defer>
+const valineAPI = (() => {
+  try {
+    AV.init("YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz", "pF4kpoD5nxRq1AOLaSxmFwfr");
+  } catch(error) {}
+  const isExist = (identity) => {
+    identity = identity || getRealPath();
+    let query = new AV.Query('Timer');
+    return new Promise((resolve, reject) => {
+      query.equalTo("identity", identity);
+      query.find().then(results => {
+        resolve(results.length > 0);
+      }, error => reject(error));
+    })
+  }
+
+  const _get = (identity) => {
+    let query = null;
+    if(identity && identity instanceof Array){
+      let querys = [];
+      for(let i = 0; i < identity.length; ++i) {
+        querys[i] = new AV.Query('Timer');
+        querys[i].equalTo('identity', identity[i]);
+      }
+      query = AV.Query.or.apply(null ,querys);
+    } else {
+      identity = identity || getRealPath();
+      query = new AV.Query("Timer");
+      query.equalTo("identity", identity);
+    }
+
+    return new Promise((resolve, reject) => {
+      query.find()
+      .then(results => resolve(results))
+      .catch(error => reject(error))
+    })
+  }
+
+  const create = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let Todo = AV.Object.extend('Timer');
+      let todo = new Todo();
+      todo.set("times", 1);
+      todo.set("identity", identity);
+      todo.save().then(res => resolve(true), error => reject(error));
+    })
+  }
+
+  const update = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let query = new AV.Query('Timer');
+      query.equalTo("identity", identity);
+      query.find().then(todos => {
+        todos.forEach(todo => {
+          todo.set("times", todo.attributes.times + 1);
+        });
+        return AV.Object.saveAll(todos);
+      }).then(todos => resolve(true), error => reject(error));
+    })
+  }
+
+  return {
+    isExist,
+    _get,
+    update,
+    create
+  }
+})()
+
+const calcAndWriteTimes = () => {
+  let isPost = true;
+
+  let timerAllDOM = document.querySelectorAll(".article-timer");
+
+  if(isPost) {
+    let identity = timerAllDOM[0].getAttribute("data-identity");
+    valineAPI.isExist(identity)
+    .then(exist => {
+      if(exist) {
+        return valineAPI.update(identity);
+      }
+      return new Promise(resolve => resolve(true));
+    })
+    .then( succuess => valineAPI._get(identity))
+    .then( result => timerAllDOM[0].innerText = result[0].attributes.times)
+    .catch(error => console.log(error.message))
+    return ;
+  }
+
+  let timerDOMCache = {};
+
+  for(let timerDOM of timerAllDOM) {
+    let identity = timerDOM.getAttribute("data-identity");
+    if(timerDOMCache.hasOwnProperty(identity)){
+      timerDOMCache[identity].dom.push(timerDOM);
+    }else{
+      timerDOMCache[identity] = {
+        dom: [timerDOM],
+        times: undefined
+      };
+    }
+  }
+
+  let identities = Object.keys(timerDOMCache);
+  valineAPI._get(identities).then(results => {
+    for(let result of results) {
+      let {identity, times} = result.attributes;
+      timerDOMCache[identity].times = times;
+      timerDOMCache[identity].dom.map(item => item.innerText = times);
+    }
+    for(let identity of identities) {
+      if(timerDOMCache[identity].times){
+        continue;
+      }
+      timerDOMCache[identity].dom.map(item => item.innerText = 1);
+      valineAPI.create(identity);
+    }
+  }).catch(error => console.log(error.message))
+}
+
+if(true){
+  calcAndWriteTimes();
+}
+</script>
+   
+
+</div>
+
+
+      <footer>
+  <p class="site-info">
+    Theme - <a href="https://github.com/dongyuanxin/theme-bmw">BMW</a> | Made With 💗 | Powered by <a href="https://godbmw.com/">GodBMW</a>
+    <br>
+    
+  </p>
+</footer>
+
+
+      <div class="back-to-top hidden">
+  <span>
+    <i class="iconfont icon-60"></i><span></span>%
+  </span>
+</div>
+
+<script>
+const updateIconToTop = percent => {
+  let dom = document.querySelector(".back-to-top span span");
+  dom.innerText = percent;
+  if(percent < 1) {
+    document.querySelector(".back-to-top").className = "back-to-top hidden";
+  } else {
+    document.querySelector(".back-to-top").className = "back-to-top";
+  }
+}
+
+const handleScoll = () => {
+  let isRunning = false;
+  return () => {
+    if (isRunning) return;
+    isRunning = true;
+    window.requestAnimationFrame(timestamp => {
+      let scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop,
+        scrollHeight =
+          document.documentElement.scrollHeight ||
+          document.body.scrollHeight,
+        clientHeight =
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      isRunning = false;
+      if (scrollTop <= 1) {
+        updateIconToTop(0);
+        return;
+      }
+      if (scrollTop + clientHeight >= scrollHeight) {
+        updateIconToTop(100);
+      } else {
+        updateIconToTop(parseInt(
+          100 * scrollTop / (scrollHeight - clientHeight),
+          10
+        ));
+      }
+    });
+  };
+}
+
+const backToTop = () => {
+  let scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop,
+    delay = 10,
+    time = 200;
+  if (scrollTop <= 20) {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  let step = Math.ceil(scrollTop * delay / time);
+  let timer = setInterval(() => {
+    scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop - step <= 0) {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      clearInterval(timer);
+    } else {
+      document.documentElement.scrollTop = scrollTop - step;
+      document.body.scrollTop = scrollTop - step;
+    }
+  }, delay);
+}
+
+document.addEventListener("scroll", handleScoll(), false);
+
+document.querySelector(".back-to-top").addEventListener("click", backToTop, false);
+
+</script>
+
+    </div>
+
+    
+
+    <script src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script>
+<script async>
+  let fancyTimer = setInterval(function(){
+    if(!window.$){
+      return;
+    }
+    $(document).ready(function() {
+      $(".post img").each(function () {
+        if($(this).parent().get(0).tagName.toLowerCase() === "a") {
+          return;
+        }
+        // $(this).attr("data-fancybox", "gallery"); // if you add 'data-fancybox', img will display after showed
+        var element = document.createElement("a");
+        $(element).attr("data-fancybox", "gallery");
+        $(element).attr("href", $(this).attr("src"));
+        $(this).wrap(element);
+      });
+      
+      clearInterval(fancyTimer);
+    });
+  }, 10);
+</script>
+
+    
+  </body>
+
+</html>

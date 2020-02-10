@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  <title>JavaScript一些实用的技巧 | 梁帅的博客</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="JavaScript,">
+  
+
+  
+
+  
+
+  
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="apple-touch-icon" href="/img/favicon.ico">
+  
+
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/icon/iconfont.css">
+<link rel="stylesheet" href="/css/github-markdown.css">
+<link rel="stylesheet" href="/css/highlight.css">
+
+  <script src="/js/util.js"></script>
+<script src="/js/valine.min.js"></script>
+
+  
+
+  
+
+  
+    <link href="https://cdn.bootcss.com/social-share.js/1.0.16/css/share.min.css" rel="stylesheet">
+  
+  
+  <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js" async></script>
+  
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.0/dist/av-min.js"></script>
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <div id="app">
+
+      <div class="header-wrap">
+  <header>
+    <div class="site-brand">
+      <div class="site-title">
+        <a href="/">梁帅の博客</a>
+      </div>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav-menu">
+      
+        <li class="nav-item" data-path="/">
+          
+            <a href="/" target="_self">
+              主页
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          
+            <a href="/archives/" target="_self">
+              归档
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          
+            <a href="/tags/" target="_self">
+              标签
+            </a>
+          
+        </li>
+      
+      </ul>
+    </nav>
+    <i class="iconfont icon-menu"></i>
+  </header>
+</div>
+
+<script>
+  let links = document.querySelectorAll('.nav-item');
+  for(let link of links){
+    let childrenLink = link.querySelector('ul');
+    link.addEventListener('mouseenter', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown active";
+      }
+    })
+    link.addEventListener('mouseleave', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown";
+      }
+    })
+  }
+  let rootRealPath = getRealPath(window.location.pathname, true);
+  for(let link of links) {
+    let linkPath = link.getAttribute("data-path");
+    if(linkPath && getRealPath(linkPath, true) === rootRealPath) {
+      link.className = "nav-item hover";
+    }
+  }
+
+  let iconMenu = document.querySelector("i.iconfont.icon-menu"),
+    iconMenuClicked = false;
+  let navDOM = document.querySelector("nav.site-navigation");
+  iconMenu.addEventListener("click", () => {
+    iconMenuClicked 
+      ? navDOM.className = "site-navigation active"
+      : navDOM.className = "site-navigation";
+    iconMenuClicked = !iconMenuClicked;
+  })
+</script>
+
+      
+
+
+
+
+
+
+
+
+<div class="container post-index">
+
+  
+
+<div class="post">
+  <h1 class="article-title">
+    <span>JavaScript一些实用的技巧</span>
+  </h1>
+  <div class="article-top-meta">
+    <span>
+      发布 : 
+      2016-08-10
+    </span>
+    
+    
+      <span>
+        浏览 : <span class="article-timer" data-identity="javascript-tips"></span>
+      </span>
+    
+  </div>
+
+  
+
+  <div class="article-content">
+    <div class="markdown-body">
+      <p>最近看了很多开源项目的源码，感觉学到了不少东西，也学到了很多比较碎的技巧。JavaScript小技巧实在是太多，把这些小技巧和之前知道的一起总结一下，并且持续更新，权当是备忘。</p>
+<a id="more"></a>
+<h3 id="this-length-gt-gt-gt-0"><a href="#this-length-gt-gt-gt-0" class="headerlink" title="this.length &gt;&gt;&gt; 0"></a>this.length &gt;&gt;&gt; 0</h3><p>无符号右移运算，该操作常见于数组遍历，比如玉伯曾经发布的es5-safe模块里面有大量的该操作。作用是确保.length 是一个0到2^32的正整数</p>
+<ul>
+<li>所有非数字的被转换成0</li>
+<li>-1 转换成 0</li>
+<li>负数转换成正整数</li>
+<li>浮点数相当于执行Math.floor</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>&gt;&gt;&gt;<span class="number">0</span>            === <span class="number">1</span></span><br><span class="line"><span class="number">-1</span>&gt;&gt;&gt;<span class="number">0</span>           === <span class="number">0xFFFFFFFF</span>          <span class="number">-1</span>&gt;&gt;<span class="number">0</span>    === <span class="number">-1</span></span><br><span class="line"><span class="number">1.7</span>&gt;&gt;&gt;<span class="number">0</span>          === <span class="number">1</span></span><br><span class="line"><span class="number">0x100000002</span>&gt;&gt;&gt;<span class="number">0</span>  === <span class="number">2</span></span><br><span class="line"><span class="number">1e21</span>&gt;&gt;&gt;<span class="number">0</span>         === <span class="number">0xDEA00000</span>          <span class="number">1e21</span>&gt;&gt;<span class="number">0</span>  === <span class="number">-0x21600000</span></span><br><span class="line"><span class="literal">Infinity</span>&gt;&gt;&gt;<span class="number">0</span>     === <span class="number">0</span></span><br><span class="line"><span class="literal">NaN</span>&gt;&gt;&gt;<span class="number">0</span>          === <span class="number">0</span></span><br><span class="line"><span class="literal">null</span>&gt;&gt;&gt;<span class="number">0</span>         === <span class="number">0</span></span><br><span class="line"><span class="string">'1'</span>&gt;&gt;&gt;<span class="number">0</span>          === <span class="number">1</span></span><br><span class="line"><span class="string">'x'</span>&gt;&gt;&gt;<span class="number">0</span>          === <span class="number">0</span></span><br><span class="line"><span class="built_in">Object</span>&gt;&gt;&gt;<span class="number">0</span>       === <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<h3 id="index"><a href="#index" class="headerlink" title="~index"></a>~index</h3><p>在查找某字符串或者数组元素在字符串或者数组里面的索引时，如果不存在index都为-1， 这个时候用~index 如果index为 -1 会被转换成0, 相当于false<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> idx = str.indexOf(<span class="string">'a'</span>);</span><br><span class="line"><span class="keyword">if</span>(idx &gt; <span class="number">-1</span>)&#123;</span><br><span class="line">	doSomething();</span><br><span class="line">&#125;</span><br><span class="line">(idx &gt; <span class="number">-1</span>) &amp;&amp; doSomething();</span><br><span class="line">~idx &amp;&amp; doSomething()</span><br></pre></td></tr></table></figure></p>
+<h3 id="void-0"><a href="#void-0" class="headerlink" title="void 0"></a>void 0</h3><p>void 0 是用来替换undefined的， 由于undefined在JavaScript中并非关键字， 我们可以直接给undefined赋值从而修改了undefined，由此来看undefined并不安全。 void 0 实际上总是返回undefined值，所以更加安全，而且相对来说也更加短，节省字符数。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">undefined</span> = <span class="number">123</span>; <span class="comment">//undefined 可以被赋值</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="0-eval-‘this’"><a href="#0-eval-‘this’" class="headerlink" title="(0,eval)(‘this’)"></a>(0,eval)(‘this’)</h3><p>先上代码<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _global = (<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123; </span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">this</span> || (<span class="number">0</span>,<span class="built_in">eval</span>)(<span class="string">"this"</span>); </span><br><span class="line">&#125;());</span><br></pre></td></tr></table></figure></p>
+<p>用于获取全局对象, 可以兼容浏览器和Node.js， 严格模式和非严格模式。<br>this 在非严格模式下在浏览器端指向window，在Node.js里面指向global或者GLOBAL (Node.js源码里面这样写的 <code>global = this;global.GLOBAL = global;</code> ),<br>可是在严格模式下this却是undefined。<br>而(0,eval)(“this”) 总是能够返回全局对象， 那么为什么不直接调用eval(‘this’)呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">var x = &apos;outer&apos;;</span><br><span class="line">(function() &#123;</span><br><span class="line">  var x = &apos;inner&apos;;</span><br><span class="line">  eval(&apos;console.log(&quot;直接调用 Eval:&quot; + x)&apos;); </span><br><span class="line">  (1,eval)(&apos;console.log(&quot;间接调用Eval: &quot; + x)&apos;); </span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>直接调用 Eval:inner<br>间接调用Eval: outer</p>
+</blockquote>
+<p>所以如果直接调用的话可能会返回当前作用域this。</p>
+<h3 id="Date格式化"><a href="#Date格式化" class="headerlink" title="Date格式化"></a>Date格式化</h3><p>经常会遇到需要格式化日期时间为 yyyy-MM-dd HH:mm:ss格式，这里有种比较简单的方法<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> date = <span class="keyword">new</span> <span class="built_in">Date</span>();</span><br><span class="line"><span class="keyword">var</span> result = date.toLocaleString(<span class="string">'zh-CN'</span>, &#123; <span class="attr">hour12</span>: <span class="literal">false</span> &#125;)</span><br><span class="line">  .replace(<span class="regexp">/\//g</span>, <span class="string">'-'</span>).replace(<span class="regexp">/\b\d\b/g</span>, <span class="string">'0$&amp;'</span>);</span><br></pre></td></tr></table></figure></p>
+<h3 id="取月份天数"><a href="#取月份天数" class="headerlink" title="取月份天数"></a>取月份天数</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="built_in">Date</span>(year, month + <span class="number">1</span>, <span class="number">0</span>).getDate();</span><br></pre></td></tr></table></figure>
+<p>new Date()第三个参数为0 ，并且month 为 month + 1 是返回的是当前month的最后一天，即是月份的天数。</p>
+
+    </div>
+  </div>
+  
+    <div class="copy-right">
+      <div class="markdown-body">
+        <blockquote>
+        
+        
+          本文作者 : Shuai Liang <br>
+        
+        原文链接 : <a href="">http://liangshuai.me/2016/08/10/javascript-tips/</a><br>
+        版权声明 : 本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！
+        </blockquote>
+      </div>
+    </div>
+  
+  
+  
+    <div class="social-share" style="margin-top: -2rem" data-wechat-qrcode-title="<p>微信扫一扫</p>" data-wechat-qrcode-helper="<p>微信右上角, 扫一扫分享</p>" data-sites="qzone, qq, weibo, wechat, douban, google, facebook, twitter">
+  <span style="color: #6b7487; font-size: 1.4rem;">分享到: </span>
+</div>
+<script src="https://cdn.bootcss.com/social-share.js/1.0.16/js/social-share.min.js" async></script>
+  
+
+  
+    <div id="reward">
+  
+    <p id="reward-meta">知识 & 情怀 | 二者兼得</p>
+  
+  <button id="reward-btn">
+    
+    <span>打赏</span>
+  </button>
+  <div id="reward-qrcode">
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/wechat.png" alt="微信扫一扫, 向我投食">
+        <p class="qrcode-meta">微信扫一扫, 向我投食</p>
+      </div>
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/alipay.png" alt="支付宝扫一扫, 向我投食">
+        <p class="qrcode-meta">支付宝扫一扫, 向我投食</p>
+      </div>
+    
+  </div>
+
+</div>
+
+<script>
+  (() => {
+    let button = document.querySelector('#reward-btn'),
+      qrcode = document.querySelector('#reward-qrcode'),
+      display = false;
+    
+    button.addEventListener('click', () => {
+      qrcode.style.display = display ? 'none' : 'block'
+      display = !display
+    }, false)
+  })()
+</script>
+  
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+      <span>
+        
+          <i class="iconfont icon-06tags"></i>标签: 
+          
+          <span class="span--tag">
+            <a href="/tags/JavaScript/">
+              #JavaScript
+            </a>
+          </span>
+          
+        
+      </span>
+    </div>
+    <div class="article-meta pull-right">
+    </div>
+  </div>
+</div>
+
+
+
+
+  <nav class="post-navigation">
+    
+      <div class="nav-pre">
+        <i class="iconfont icon-prev"></i>
+        上一篇:
+        <a href="/2016/08/06/debug-dynamically-loaded-javascript/" target="_self">Chrome调试动态创建的JS</a>
+      </div>
+    
+    
+      <div class="nav-next">
+        下一篇:
+        <a href="/2016/12/01/exploring-bigpipe/" target="_self">探索Bigpipe</a>
+        <i class="iconfont icon-next"></i>
+      </div>
+    
+  </nav>
+
+  
+    <a href="#comment" class="comment-anchor"></a>
+<div class="comment-title"><i class="iconfont icon-footprint"></i> 留下足迹 <i class="iconfont icon-footprint"></i></div>
+<div id="vcomments"></div>
+
+<script defer>
+  if( true ) {
+    let path = getRealPath()
+    new Valine({
+      el: "#vcomments",
+      appId: "YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz",
+      appKey: "pF4kpoD5nxRq1AOLaSxmFwfr",
+      notify: false,
+      verify: false,
+      avatar: "robohash",
+      placeholder: "正确填写邮箱, 才能及时收到回复哦♪(^∇^*)",
+      path
+    });
+  }
+</script>
+   
+
+  
+    <script defer>
+const valineAPI = (() => {
+  try {
+    AV.init("YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz", "pF4kpoD5nxRq1AOLaSxmFwfr");
+  } catch(error) {}
+  const isExist = (identity) => {
+    identity = identity || getRealPath();
+    let query = new AV.Query('Timer');
+    return new Promise((resolve, reject) => {
+      query.equalTo("identity", identity);
+      query.find().then(results => {
+        resolve(results.length > 0);
+      }, error => reject(error));
+    })
+  }
+
+  const _get = (identity) => {
+    let query = null;
+    if(identity && identity instanceof Array){
+      let querys = [];
+      for(let i = 0; i < identity.length; ++i) {
+        querys[i] = new AV.Query('Timer');
+        querys[i].equalTo('identity', identity[i]);
+      }
+      query = AV.Query.or.apply(null ,querys);
+    } else {
+      identity = identity || getRealPath();
+      query = new AV.Query("Timer");
+      query.equalTo("identity", identity);
+    }
+
+    return new Promise((resolve, reject) => {
+      query.find()
+      .then(results => resolve(results))
+      .catch(error => reject(error))
+    })
+  }
+
+  const create = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let Todo = AV.Object.extend('Timer');
+      let todo = new Todo();
+      todo.set("times", 1);
+      todo.set("identity", identity);
+      todo.save().then(res => resolve(true), error => reject(error));
+    })
+  }
+
+  const update = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let query = new AV.Query('Timer');
+      query.equalTo("identity", identity);
+      query.find().then(todos => {
+        todos.forEach(todo => {
+          todo.set("times", todo.attributes.times + 1);
+        });
+        return AV.Object.saveAll(todos);
+      }).then(todos => resolve(true), error => reject(error));
+    })
+  }
+
+  return {
+    isExist,
+    _get,
+    update,
+    create
+  }
+})()
+
+const calcAndWriteTimes = () => {
+  let isPost = true;
+
+  let timerAllDOM = document.querySelectorAll(".article-timer");
+
+  if(isPost) {
+    let identity = timerAllDOM[0].getAttribute("data-identity");
+    valineAPI.isExist(identity)
+    .then(exist => {
+      if(exist) {
+        return valineAPI.update(identity);
+      }
+      return new Promise(resolve => resolve(true));
+    })
+    .then( succuess => valineAPI._get(identity))
+    .then( result => timerAllDOM[0].innerText = result[0].attributes.times)
+    .catch(error => console.log(error.message))
+    return ;
+  }
+
+  let timerDOMCache = {};
+
+  for(let timerDOM of timerAllDOM) {
+    let identity = timerDOM.getAttribute("data-identity");
+    if(timerDOMCache.hasOwnProperty(identity)){
+      timerDOMCache[identity].dom.push(timerDOM);
+    }else{
+      timerDOMCache[identity] = {
+        dom: [timerDOM],
+        times: undefined
+      };
+    }
+  }
+
+  let identities = Object.keys(timerDOMCache);
+  valineAPI._get(identities).then(results => {
+    for(let result of results) {
+      let {identity, times} = result.attributes;
+      timerDOMCache[identity].times = times;
+      timerDOMCache[identity].dom.map(item => item.innerText = times);
+    }
+    for(let identity of identities) {
+      if(timerDOMCache[identity].times){
+        continue;
+      }
+      timerDOMCache[identity].dom.map(item => item.innerText = 1);
+      valineAPI.create(identity);
+    }
+  }).catch(error => console.log(error.message))
+}
+
+if(true){
+  calcAndWriteTimes();
+}
+</script>
+   
+
+</div>
+
+
+      <footer>
+  <p class="site-info">
+    Theme - <a href="https://github.com/dongyuanxin/theme-bmw">BMW</a> | Made With 💗 | Powered by <a href="https://godbmw.com/">GodBMW</a>
+    <br>
+    
+  </p>
+</footer>
+
+
+      <div class="back-to-top hidden">
+  <span>
+    <i class="iconfont icon-60"></i><span></span>%
+  </span>
+</div>
+
+<script>
+const updateIconToTop = percent => {
+  let dom = document.querySelector(".back-to-top span span");
+  dom.innerText = percent;
+  if(percent < 1) {
+    document.querySelector(".back-to-top").className = "back-to-top hidden";
+  } else {
+    document.querySelector(".back-to-top").className = "back-to-top";
+  }
+}
+
+const handleScoll = () => {
+  let isRunning = false;
+  return () => {
+    if (isRunning) return;
+    isRunning = true;
+    window.requestAnimationFrame(timestamp => {
+      let scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop,
+        scrollHeight =
+          document.documentElement.scrollHeight ||
+          document.body.scrollHeight,
+        clientHeight =
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      isRunning = false;
+      if (scrollTop <= 1) {
+        updateIconToTop(0);
+        return;
+      }
+      if (scrollTop + clientHeight >= scrollHeight) {
+        updateIconToTop(100);
+      } else {
+        updateIconToTop(parseInt(
+          100 * scrollTop / (scrollHeight - clientHeight),
+          10
+        ));
+      }
+    });
+  };
+}
+
+const backToTop = () => {
+  let scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop,
+    delay = 10,
+    time = 200;
+  if (scrollTop <= 20) {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  let step = Math.ceil(scrollTop * delay / time);
+  let timer = setInterval(() => {
+    scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop - step <= 0) {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      clearInterval(timer);
+    } else {
+      document.documentElement.scrollTop = scrollTop - step;
+      document.body.scrollTop = scrollTop - step;
+    }
+  }, delay);
+}
+
+document.addEventListener("scroll", handleScoll(), false);
+
+document.querySelector(".back-to-top").addEventListener("click", backToTop, false);
+
+</script>
+
+    </div>
+
+    
+
+    <script src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script>
+<script async>
+  let fancyTimer = setInterval(function(){
+    if(!window.$){
+      return;
+    }
+    $(document).ready(function() {
+      $(".post img").each(function () {
+        if($(this).parent().get(0).tagName.toLowerCase() === "a") {
+          return;
+        }
+        // $(this).attr("data-fancybox", "gallery"); // if you add 'data-fancybox', img will display after showed
+        var element = document.createElement("a");
+        $(element).attr("data-fancybox", "gallery");
+        $(element).attr("href", $(this).attr("src"));
+        $(this).wrap(element);
+      });
+      
+      clearInterval(fancyTimer);
+    });
+  }, 10);
+</script>
+
+    
+  </body>
+
+</html>

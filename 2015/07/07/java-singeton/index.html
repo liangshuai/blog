@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  <title>Java设计模式修炼之道之单例模式 | 梁帅的博客</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Java,单例,Singeton,">
+  
+
+  
+
+  
+
+  
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="apple-touch-icon" href="/img/favicon.ico">
+  
+
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/icon/iconfont.css">
+<link rel="stylesheet" href="/css/github-markdown.css">
+<link rel="stylesheet" href="/css/highlight.css">
+
+  <script src="/js/util.js"></script>
+<script src="/js/valine.min.js"></script>
+
+  
+
+  
+
+  
+    <link href="https://cdn.bootcss.com/social-share.js/1.0.16/css/share.min.css" rel="stylesheet">
+  
+  
+  <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js" async></script>
+  
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.0/dist/av-min.js"></script>
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <div id="app">
+
+      <div class="header-wrap">
+  <header>
+    <div class="site-brand">
+      <div class="site-title">
+        <a href="/">梁帅の博客</a>
+      </div>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav-menu">
+      
+        <li class="nav-item" data-path="/">
+          
+            <a href="/" target="_self">
+              主页
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          
+            <a href="/archives/" target="_self">
+              归档
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          
+            <a href="/tags/" target="_self">
+              标签
+            </a>
+          
+        </li>
+      
+      </ul>
+    </nav>
+    <i class="iconfont icon-menu"></i>
+  </header>
+</div>
+
+<script>
+  let links = document.querySelectorAll('.nav-item');
+  for(let link of links){
+    let childrenLink = link.querySelector('ul');
+    link.addEventListener('mouseenter', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown active";
+      }
+    })
+    link.addEventListener('mouseleave', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown";
+      }
+    })
+  }
+  let rootRealPath = getRealPath(window.location.pathname, true);
+  for(let link of links) {
+    let linkPath = link.getAttribute("data-path");
+    if(linkPath && getRealPath(linkPath, true) === rootRealPath) {
+      link.className = "nav-item hover";
+    }
+  }
+
+  let iconMenu = document.querySelector("i.iconfont.icon-menu"),
+    iconMenuClicked = false;
+  let navDOM = document.querySelector("nav.site-navigation");
+  iconMenu.addEventListener("click", () => {
+    iconMenuClicked 
+      ? navDOM.className = "site-navigation active"
+      : navDOM.className = "site-navigation";
+    iconMenuClicked = !iconMenuClicked;
+  })
+</script>
+
+      
+
+
+
+
+
+
+
+
+<div class="container post-index">
+
+  
+
+<div class="post">
+  <h1 class="article-title">
+    <span>Java设计模式修炼之道之单例模式</span>
+  </h1>
+  <div class="article-top-meta">
+    <span>
+      发布 : 
+      2015-07-07
+    </span>
+    
+    
+      <span>
+        浏览 : <span class="article-timer" data-identity="java-singeton"></span>
+      </span>
+    
+  </div>
+
+  
+
+  <div class="article-content">
+    <div class="markdown-body">
+      <p>单例模式顾名思义就是要保证某个类只被实例化一次，该模式常常用于窗口管理器、文件系统等代表那些本质上唯一的系统组件。由于要保证该类只能被实例化一次，所以就要求是该类自己创建自己的实例，因为如果能够别的类有能力来创建该类的实例的话就不能保证只有一个实例。为了使外界能够使用这个唯一的实例，单例类必须向外界提供自己的实例。创建单例的方式有以下几种:</p>
+<a id="more"></a>
+<h3 id="饿汉式单例类"><a href="#饿汉式单例类" class="headerlink" title="饿汉式单例类"></a>饿汉式单例类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EagerSingleton</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> EagerSingleton instance = <span class="keyword">new</span> EagerSingleton();</span><br><span class="line">	<span class="comment">// 私有构造函数，不可省略，需要确保别的类不能通过构造函数创建该类的实例</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="title">EagerSingleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> EagerSingleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">return</span> instance;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这种方式在类被加载时初始化实例，构造方法是private，所以外界不能直接创建该类的实例。这种方式创建单例类的优缺点如下:<br>优点:相对于后面介绍的懒汉式单例类来说节省了时间<br>缺点:</p>
+<ul>
+<li>牺牲了空间，因为类一加载就需要创建单例</li>
+<li>不能算是饿汉式特有的缺点，但是却是需要注意的是防止某些客户端通过反射机制设置构造方法的setAccessible(true),从而拥有可以直接创建实例的能力。测试程序如下:</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EagerSingleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> EagerSingleton instance=<span class="keyword">new</span> EagerSingleton();</span><br><span class="line">    <span class="comment">//私有构造函数，不可省略，需要确保别的类不能通过构造函数创建该类的实例</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">EagerSingleton</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> EagerSingleton <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">                    <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IllegalArgumentException, InstantiationException, IllegalAccessException,InvocationTargetException </span>&#123;</span><br><span class="line">                    EagerSingleton es1=EagerSingleton.getInstance();</span><br><span class="line">                    EagerSingleton es2=EagerSingleton.getInstance();</span><br><span class="line">                    System.out.println(es1==es2);</span><br><span class="line">                    <span class="keyword">for</span> (java.lang.reflect.Constructor&lt;?&gt;c:es1.getClass().getDeclaredConstructors()) &#123;</span><br><span class="line">                                   c.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">                                   EagerSingleton es3=(EagerSingleton) c.newInstance();</span><br><span class="line">                                   System.out.println(es2==es3);</span><br><span class="line">                    &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到输出结果如下：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="literal">true</span></span><br><span class="line"><span class="literal">false</span></span><br></pre></td></tr></table></figure>
+<p>这说明es3和es2是引用的不同的对象。</p>
+<p>解决该问题的一个思路如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EagerSingleton</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> count=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> EagerSingleton instance=<span class="keyword">new</span> EagerSingleton();</span><br><span class="line">	<span class="comment">//私有构造函数，不可省略，需要确保别的类不能通过构造函数创建该类的实例</span></span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="title">EagerSingleton</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(count==<span class="number">1</span>)&#123;</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"只能初始化一次"</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		count++;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> EagerSingleton <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">return</span> instance;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="懒汉式单例类"><a href="#懒汉式单例类" class="headerlink" title="懒汉式单例类"></a>懒汉式单例类</h3><p>介绍懒汉式单例类之前先介绍几种使用懒汉式单例类的几种常见的不恰当的例子：</p>
+<ul>
+<li>如下这种懒汉式单例是错误频率比较高的一种，其错误的原因是该单例类只能在单线程的环境中正确使用。如果在多线程的环境中，如果线程A和线程B同时进入getInstance中，如果其中一个线程判断instance==null，进入了if的代码块正在或者还没有开始实例化LazySingleton或者实例化结束尚未把实例引用赋给instance，此时线程B就会再次进入if代码块，造成系统中有超过一个的单例类实例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LazySingleton</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> LazySingleton instance = <span class="keyword">null</span>;</span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="title">LazySingleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> LazySingleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">			instance = <span class="keyword">new</span> LazySingleton();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> instance;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同步化getInstance方法，这样做可以保证是单例的，但是由于每一次获取实例都只能有一个方法进入getInstance方法，所以效率相对比较低。但是总的来说这是一个正确的单例模式实现方式。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> LazySingleton <span class="title">getInstance</span><span class="params">()</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>所谓的”双重检查加锁”，这种方式的代码如下，可以说很大程度上这种方式被一些人误认为是解决第2条效率低的比较好的方式，因为只有在第一次获取实例的时候才会进入加锁的代码块，以后就再不用加锁了。可是需要注意的是这种双重检查加锁的机制在Java中是行不通的，原因如下:<br>对象初始化和引用赋值的顺序是不可预料的<br>这句话怎么理解呢，在这里new LazySingleton()的过程中会先为对象分配内存空间和对象属性的赋值，之后就可将引用地址传递给instance变量，可是这个时候对象的初始化过程有可能并没有完成，这个时候如果另外一个线程进入getInstance就会得到一个并没有完成初始化的状态不正确的对象，从而造成崩毁，这个地方需要特别注意。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LazySingleton</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> LazySingleton instance=<span class="keyword">null</span>;</span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="title">LazySingleton</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> LazySingleton <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">if</span>(instance==<span class="keyword">null</span>)&#123;</span><br><span class="line">			<span class="keyword">synchronized</span> (LazySingleton.class) &#123;</span><br><span class="line">				<span class="keyword">if</span>(instance==<span class="keyword">null</span>)&#123;</span><br><span class="line">					instance=<span class="keyword">new</span> LazySingleton();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> instance;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="类级内部类式单例类"><a href="#类级内部类式单例类" class="headerlink" title="类级内部类式单例类"></a>类级内部类式单例类</h3><p>上面的懒汉式和饿汉式实现方式各有利弊，类级内部类单例类可以说兼顾了两者的优点，可谓是单例模式最好的实现方式之一。<br>先来看看什么是类级内部类，类级内部类是指由static修饰的成员式内部类，相当于类的static成分，它的对象与外部类间不存在依赖关系，可以直接创建。类级内部类可以定义静态方法，静态方法中只能够引用外部类中的静态成员方法或者成员变量。类级内部类相当于其外部类的成员，只有在第一次被使用的时候才会被加载。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StaticInnerClassSingleton</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">private</span> <span class="title">StaticInnerClassSingleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SingletonHolder</span></span>&#123;</span><br><span class="line">		<span class="comment">//静态初始化，由JVM来保证线程安全</span></span><br><span class="line">		<span class="keyword">private</span> <span class="keyword">static</span> StaticInnerClassSingleton instance=<span class="keyword">new</span> StaticInnerClassSingleton();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> StaticInnerClassSingleton <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="keyword">return</span> SingletonHolder.instance;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码中同步已经由JVM执行了，JVM在以下情况下会进行同步控制。</p>
+<ul>
+<li>由静态初始化器(静态字段上或static{}块中的初始化器)初始化数据时</li>
+<li>访问final字段时</li>
+<li>在创建线程之前创建对象时</li>
+<li>线程可以看见它将要处理的对象时</li>
+</ul>
+<p>这种单例模式只有在第一次调用getInstance的时候读取SingletonHolder.instance时初始化，同时由于是SingletonHolder的静态字段，所以JVM会保证它的线程安全性。</p>
+<h3 id="枚举式单例类"><a href="#枚举式单例类" class="headerlink" title="枚举式单例类"></a>枚举式单例类</h3><p>按照《高效Java 第二版》中的说法：单元素的枚举类型已经成为实现Singleton的最佳方法。用枚举来实现单例非常简单，只需要编写一个包含单个元素的枚举类型即可。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> Singleton &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 定义一个枚举的元素，它就代表了Singleton的一个实例。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    uniqueInstance;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 单例可以有自己的操作</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">singletonOperation</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="comment">//功能处理</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用枚举来实现单实例控制会更加简洁，而且无偿地提供了序列化机制，并由JVM从根本上提供保障，绝对防止多次实例化，是更简洁、高效、安全的实现单例的方式。</p>
+
+    </div>
+  </div>
+  
+    <div class="copy-right">
+      <div class="markdown-body">
+        <blockquote>
+        
+        
+          本文作者 : Shuai Liang <br>
+        
+        原文链接 : <a href="">http://liangshuai.me/2015/07/07/java-singeton/</a><br>
+        版权声明 : 本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！
+        </blockquote>
+      </div>
+    </div>
+  
+  
+  
+    <div class="social-share" style="margin-top: -2rem" data-wechat-qrcode-title="<p>微信扫一扫</p>" data-wechat-qrcode-helper="<p>微信右上角, 扫一扫分享</p>" data-sites="qzone, qq, weibo, wechat, douban, google, facebook, twitter">
+  <span style="color: #6b7487; font-size: 1.4rem;">分享到: </span>
+</div>
+<script src="https://cdn.bootcss.com/social-share.js/1.0.16/js/social-share.min.js" async></script>
+  
+
+  
+    <div id="reward">
+  
+    <p id="reward-meta">知识 & 情怀 | 二者兼得</p>
+  
+  <button id="reward-btn">
+    
+    <span>打赏</span>
+  </button>
+  <div id="reward-qrcode">
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/wechat.png" alt="微信扫一扫, 向我投食">
+        <p class="qrcode-meta">微信扫一扫, 向我投食</p>
+      </div>
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/alipay.png" alt="支付宝扫一扫, 向我投食">
+        <p class="qrcode-meta">支付宝扫一扫, 向我投食</p>
+      </div>
+    
+  </div>
+
+</div>
+
+<script>
+  (() => {
+    let button = document.querySelector('#reward-btn'),
+      qrcode = document.querySelector('#reward-qrcode'),
+      display = false;
+    
+    button.addEventListener('click', () => {
+      qrcode.style.display = display ? 'none' : 'block'
+      display = !display
+    }, false)
+  })()
+</script>
+  
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+      <span>
+        
+          <i class="iconfont icon-06tags"></i>标签: 
+          
+          <span class="span--tag">
+            <a href="/tags/Java/">
+              #Java
+            </a>
+          </span>
+          
+          <span class="span--tag">
+            <a href="/tags/单例/">
+              #单例
+            </a>
+          </span>
+          
+          <span class="span--tag">
+            <a href="/tags/Singeton/">
+              #Singeton
+            </a>
+          </span>
+          
+        
+      </span>
+    </div>
+    <div class="article-meta pull-right">
+    </div>
+  </div>
+</div>
+
+
+
+
+  <nav class="post-navigation">
+    
+      <div class="nav-pre">
+        <i class="iconfont icon-prev"></i>
+        上一篇:
+        <a href="/2015/02/11/ajax-cross-domain/" target="_self">Ajax跨域问题解决方案</a>
+      </div>
+    
+    
+      <div class="nav-next">
+        下一篇:
+        <a href="/2015/07/15/git-mutilple-host-ssh-key/" target="_self">为多个Git仓库配置SSH Key</a>
+        <i class="iconfont icon-next"></i>
+      </div>
+    
+  </nav>
+
+  
+    <a href="#comment" class="comment-anchor"></a>
+<div class="comment-title"><i class="iconfont icon-footprint"></i> 留下足迹 <i class="iconfont icon-footprint"></i></div>
+<div id="vcomments"></div>
+
+<script defer>
+  if( true ) {
+    let path = getRealPath()
+    new Valine({
+      el: "#vcomments",
+      appId: "YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz",
+      appKey: "pF4kpoD5nxRq1AOLaSxmFwfr",
+      notify: false,
+      verify: false,
+      avatar: "robohash",
+      placeholder: "正确填写邮箱, 才能及时收到回复哦♪(^∇^*)",
+      path
+    });
+  }
+</script>
+   
+
+  
+    <script defer>
+const valineAPI = (() => {
+  try {
+    AV.init("YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz", "pF4kpoD5nxRq1AOLaSxmFwfr");
+  } catch(error) {}
+  const isExist = (identity) => {
+    identity = identity || getRealPath();
+    let query = new AV.Query('Timer');
+    return new Promise((resolve, reject) => {
+      query.equalTo("identity", identity);
+      query.find().then(results => {
+        resolve(results.length > 0);
+      }, error => reject(error));
+    })
+  }
+
+  const _get = (identity) => {
+    let query = null;
+    if(identity && identity instanceof Array){
+      let querys = [];
+      for(let i = 0; i < identity.length; ++i) {
+        querys[i] = new AV.Query('Timer');
+        querys[i].equalTo('identity', identity[i]);
+      }
+      query = AV.Query.or.apply(null ,querys);
+    } else {
+      identity = identity || getRealPath();
+      query = new AV.Query("Timer");
+      query.equalTo("identity", identity);
+    }
+
+    return new Promise((resolve, reject) => {
+      query.find()
+      .then(results => resolve(results))
+      .catch(error => reject(error))
+    })
+  }
+
+  const create = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let Todo = AV.Object.extend('Timer');
+      let todo = new Todo();
+      todo.set("times", 1);
+      todo.set("identity", identity);
+      todo.save().then(res => resolve(true), error => reject(error));
+    })
+  }
+
+  const update = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let query = new AV.Query('Timer');
+      query.equalTo("identity", identity);
+      query.find().then(todos => {
+        todos.forEach(todo => {
+          todo.set("times", todo.attributes.times + 1);
+        });
+        return AV.Object.saveAll(todos);
+      }).then(todos => resolve(true), error => reject(error));
+    })
+  }
+
+  return {
+    isExist,
+    _get,
+    update,
+    create
+  }
+})()
+
+const calcAndWriteTimes = () => {
+  let isPost = true;
+
+  let timerAllDOM = document.querySelectorAll(".article-timer");
+
+  if(isPost) {
+    let identity = timerAllDOM[0].getAttribute("data-identity");
+    valineAPI.isExist(identity)
+    .then(exist => {
+      if(exist) {
+        return valineAPI.update(identity);
+      }
+      return new Promise(resolve => resolve(true));
+    })
+    .then( succuess => valineAPI._get(identity))
+    .then( result => timerAllDOM[0].innerText = result[0].attributes.times)
+    .catch(error => console.log(error.message))
+    return ;
+  }
+
+  let timerDOMCache = {};
+
+  for(let timerDOM of timerAllDOM) {
+    let identity = timerDOM.getAttribute("data-identity");
+    if(timerDOMCache.hasOwnProperty(identity)){
+      timerDOMCache[identity].dom.push(timerDOM);
+    }else{
+      timerDOMCache[identity] = {
+        dom: [timerDOM],
+        times: undefined
+      };
+    }
+  }
+
+  let identities = Object.keys(timerDOMCache);
+  valineAPI._get(identities).then(results => {
+    for(let result of results) {
+      let {identity, times} = result.attributes;
+      timerDOMCache[identity].times = times;
+      timerDOMCache[identity].dom.map(item => item.innerText = times);
+    }
+    for(let identity of identities) {
+      if(timerDOMCache[identity].times){
+        continue;
+      }
+      timerDOMCache[identity].dom.map(item => item.innerText = 1);
+      valineAPI.create(identity);
+    }
+  }).catch(error => console.log(error.message))
+}
+
+if(true){
+  calcAndWriteTimes();
+}
+</script>
+   
+
+</div>
+
+
+      <footer>
+  <p class="site-info">
+    Theme - <a href="https://github.com/dongyuanxin/theme-bmw">BMW</a> | Made With 💗 | Powered by <a href="https://godbmw.com/">GodBMW</a>
+    <br>
+    
+  </p>
+</footer>
+
+
+      <div class="back-to-top hidden">
+  <span>
+    <i class="iconfont icon-60"></i><span></span>%
+  </span>
+</div>
+
+<script>
+const updateIconToTop = percent => {
+  let dom = document.querySelector(".back-to-top span span");
+  dom.innerText = percent;
+  if(percent < 1) {
+    document.querySelector(".back-to-top").className = "back-to-top hidden";
+  } else {
+    document.querySelector(".back-to-top").className = "back-to-top";
+  }
+}
+
+const handleScoll = () => {
+  let isRunning = false;
+  return () => {
+    if (isRunning) return;
+    isRunning = true;
+    window.requestAnimationFrame(timestamp => {
+      let scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop,
+        scrollHeight =
+          document.documentElement.scrollHeight ||
+          document.body.scrollHeight,
+        clientHeight =
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      isRunning = false;
+      if (scrollTop <= 1) {
+        updateIconToTop(0);
+        return;
+      }
+      if (scrollTop + clientHeight >= scrollHeight) {
+        updateIconToTop(100);
+      } else {
+        updateIconToTop(parseInt(
+          100 * scrollTop / (scrollHeight - clientHeight),
+          10
+        ));
+      }
+    });
+  };
+}
+
+const backToTop = () => {
+  let scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop,
+    delay = 10,
+    time = 200;
+  if (scrollTop <= 20) {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  let step = Math.ceil(scrollTop * delay / time);
+  let timer = setInterval(() => {
+    scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop - step <= 0) {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      clearInterval(timer);
+    } else {
+      document.documentElement.scrollTop = scrollTop - step;
+      document.body.scrollTop = scrollTop - step;
+    }
+  }, delay);
+}
+
+document.addEventListener("scroll", handleScoll(), false);
+
+document.querySelector(".back-to-top").addEventListener("click", backToTop, false);
+
+</script>
+
+    </div>
+
+    
+
+    <script src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script>
+<script async>
+  let fancyTimer = setInterval(function(){
+    if(!window.$){
+      return;
+    }
+    $(document).ready(function() {
+      $(".post img").each(function () {
+        if($(this).parent().get(0).tagName.toLowerCase() === "a") {
+          return;
+        }
+        // $(this).attr("data-fancybox", "gallery"); // if you add 'data-fancybox', img will display after showed
+        var element = document.createElement("a");
+        $(element).attr("data-fancybox", "gallery");
+        $(element).attr("href", $(this).attr("src"));
+        $(this).wrap(element);
+      });
+      
+      clearInterval(fancyTimer);
+    });
+  }, 10);
+</script>
+
+    
+  </body>
+
+</html>

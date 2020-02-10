@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  <title>Ajax跨域问题解决方案 | 梁帅的博客</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Ajax,cross domain,jsonp,Access-Control-Allow-Origin,">
+  
+
+  
+
+  
+
+  
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="apple-touch-icon" href="/img/favicon.ico">
+  
+
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/icon/iconfont.css">
+<link rel="stylesheet" href="/css/github-markdown.css">
+<link rel="stylesheet" href="/css/highlight.css">
+
+  <script src="/js/util.js"></script>
+<script src="/js/valine.min.js"></script>
+
+  
+
+  
+
+  
+    <link href="https://cdn.bootcss.com/social-share.js/1.0.16/css/share.min.css" rel="stylesheet">
+  
+  
+  <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js" async></script>
+  
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.0/dist/av-min.js"></script>
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <div id="app">
+
+      <div class="header-wrap">
+  <header>
+    <div class="site-brand">
+      <div class="site-title">
+        <a href="/">梁帅の博客</a>
+      </div>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav-menu">
+      
+        <li class="nav-item" data-path="/">
+          
+            <a href="/" target="_self">
+              主页
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          
+            <a href="/archives/" target="_self">
+              归档
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          
+            <a href="/tags/" target="_self">
+              标签
+            </a>
+          
+        </li>
+      
+      </ul>
+    </nav>
+    <i class="iconfont icon-menu"></i>
+  </header>
+</div>
+
+<script>
+  let links = document.querySelectorAll('.nav-item');
+  for(let link of links){
+    let childrenLink = link.querySelector('ul');
+    link.addEventListener('mouseenter', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown active";
+      }
+    })
+    link.addEventListener('mouseleave', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown";
+      }
+    })
+  }
+  let rootRealPath = getRealPath(window.location.pathname, true);
+  for(let link of links) {
+    let linkPath = link.getAttribute("data-path");
+    if(linkPath && getRealPath(linkPath, true) === rootRealPath) {
+      link.className = "nav-item hover";
+    }
+  }
+
+  let iconMenu = document.querySelector("i.iconfont.icon-menu"),
+    iconMenuClicked = false;
+  let navDOM = document.querySelector("nav.site-navigation");
+  iconMenu.addEventListener("click", () => {
+    iconMenuClicked 
+      ? navDOM.className = "site-navigation active"
+      : navDOM.className = "site-navigation";
+    iconMenuClicked = !iconMenuClicked;
+  })
+</script>
+
+      
+
+
+
+
+
+
+
+
+<div class="container post-index">
+
+  
+
+<div class="post">
+  <h1 class="article-title">
+    <span>Ajax跨域问题解决方案</span>
+  </h1>
+  <div class="article-top-meta">
+    <span>
+      发布 : 
+      2015-02-11
+    </span>
+    
+    
+      <span>
+        浏览 : <span class="article-timer" data-identity="ajax-cross-domain"></span>
+      </span>
+    
+  </div>
+
+  
+
+  <div class="article-content">
+    <div class="markdown-body">
+      <p>JavaScript出于同源策略<a href="http://en.wikipedia.org/wiki/Same-origin_policy" target="_blank" rel="noopener">Same-origin policy</a>，对跨域问题作了限制，不同域的客户端脚本是不能发送请求其它域。同源策略是浏览器最核心也是最基本的安全功能，所有的浏览器(注意这里说的是浏览器，移动开发中的WebView并不是浏览器，所以是可以跨域的!)都已经实现了同源策略。但是项目中经常因为各种原因，可能会遇到跨域问题。</p>
+<a id="more"></a>
+<p>###怎么样算是跨域?</p>
+<ul>
+<li>协议不同(比如HTTP协议和HTTPS协议)</li>
+<li>域名不同(比如 a.com和 b.com，也包含子域的情况，例如 a.com和 <a href="http://www.a.com" target="_blank" rel="noopener">www.a.com</a>)</li>
+<li>端口不同(例如 <a href="http://a.com/" target="_blank" rel="noopener">http://a.com/</a> 和 <a href="http://a.com:8080/" target="_blank" rel="noopener">http://a.com:8080/</a>)</li>
+</ul>
+<p>满足以上任意一种情况均属于跨域</p>
+<p>###怎么解决跨域问题</p>
+<ul>
+<li>通过CORS方式</li>
+<li>通过JSONP方式</li>
+<li>通过Apache/Nginx反向代理方式</li>
+<li>通过动态构建Script</li>
+</ul>
+<h4 id="通过CORS方式"><a href="#通过CORS方式" class="headerlink" title="通过CORS方式"></a>通过CORS方式</h4><p><a href="http://en.wikipedia.org/wiki/Cross-origin_resource_sharing" target="_blank" rel="noopener">CORS</a>是新的<a href="http://www.w3.org/TR/cors/" target="_blank" rel="noopener">W3C</a>策略,它定义了在跨域访问资源时浏览器和服务器之间如何通信。<br>CORS的基本思想是使用自自定义的HTTP头部允许浏览器和服务器之间相互了解对象，从而<br>决定请求或响应成功与否。浏览器在发送POST请求的时候会在Request Headers里面包含Origin属性<br>来向服务器端标识请求是从哪里发起的。服务器端对CORS支持是通过Access-Control-Allow-Origin<br>来进行的，如果Access-Control-Allow-Origin里面允许来自Origin的请求，那么就可以实现跨域。<br>下面用Java 的<a href="http://sparkjava.com/" target="_blank" rel="noopener">Spark</a>微框架+Velocity举例说明</p>
+<p>源码在 <a href="https://github.com/liangshuai/cors_demo" target="_blank" rel="noopener">https://github.com/liangshuai/cors_demo</a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">App</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">( String[] args )</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">      port(<span class="number">80</span>);</span><br><span class="line">      staticFileLocation(<span class="string">"/public"</span>);</span><br><span class="line">      get(<span class="string">"/"</span>, (req, res) -&gt; &#123;</span><br><span class="line">        Map&lt;String,Object&gt; attributes = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        attributes.put(<span class="string">"message"</span>, <span class="string">"Spark World"</span>);</span><br><span class="line">        attributes.put(<span class="string">"templateName"</span>, <span class="string">"index.vm"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ModelAndView(attributes, <span class="string">"layout.vm"</span>);</span><br><span class="line">      &#125;,<span class="keyword">new</span> VelocityTemplateEngine());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码会在80端口上启动一个Server，仅仅包含一个页面，页面上包含一个按钮，点击该按钮会向<a href="http://localhost:8080/cors" target="_blank" rel="noopener">http://localhost:8080/cors</a> 发送Ajax Post请求，很明显端口号不同，所以是跨域的，默认情况下</p>
+<p>Ajax Request代码如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$(<span class="string">".btn-primary"</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">     $.post(<span class="string">"http://localhost:8080/cors"</span>,<span class="function"><span class="keyword">function</span>(<span class="params">result</span>)</span>&#123;</span><br><span class="line">      $(<span class="string">"p"</span>).text(result);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+<p><img src="https://ooo.0o0.ooo/2017/03/04/58ba094dd12a2.jpg" alt="cors demo "></p>
+<p>监听8080端口的Server代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CorsServer</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">( String[] args )</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        port(<span class="number">8080</span>);</span><br><span class="line">        post(<span class="string">"/cors"</span>, (req, res) -&gt; &#123;</span><br><span class="line">          <span class="comment">/*res.header("Access-Control-Allow-Origin", "*");*/</span></span><br><span class="line">          <span class="keyword">return</span> <span class="string">"Response from cross domain"</span>;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的*代表通配符，匹配所有来源的Request</p>
+<p>此时点击”Send CORS Request”按钮，会发现Chrome Console中提示</p>
+<p><img src="https://ooo.0o0.ooo/2017/03/04/58ba097d187aa.jpg" alt="Access-Control-Allow-Origin"></p>
+<p>取消CorsServer 中的注释，并且再次运行，重新点击按钮会发现</p>
+<p><img src="https://ooo.0o0.ooo/2017/03/04/58ba09abc9e26.jpg" alt="ajax cors"></p>
+<p>可以看到已经可以成功POST请求。</p>
+<p>这个例子简单演示可CORS的原理，实际项目中这样用是非常危险的，关于CORS的安全防范可以参考<a href="http://blog.csdn.net/hfahe/article/details/7961566" target="_blank" rel="noopener">HTML5安全风险详析之一：CORS攻击</a></p>
+<h4 id="通过JSONP方式"><a href="#通过JSONP方式" class="headerlink" title="通过JSONP方式"></a>通过JSONP方式</h4><p><a href="http://en.wikipedia.org/wiki/JSONP" target="_blank" rel="noopener">JSONP</a> 是JSON的一种使用模式，可以用来解决主流浏览器的跨域数据访问问题，也就是上面所说的同源策略。JSONP实质上并不是使用Ajax请求，而是想引入正常的JS文件(引用普通的JS文件、图片等都不存在跨域问题)一样，<br>只不过这个JS文件是动态生成，关于JSONP的详细介绍了一看<a href="http://www.cnblogs.com/dowinning/archive/2012/04/19/json-jsonp-jquery.html" target="_blank" rel="noopener">说说JSON和JSONP，也许你会豁然开朗，含jQuery用例</a> ,这篇博文中详细介绍了JSONP的原理和用法，写的非常详细。</p>
+<h4 id="通过Apache-Nginx反向代理方式"><a href="#通过Apache-Nginx反向代理方式" class="headerlink" title="通过Apache/Nginx反向代理方式"></a>通过Apache/Nginx反向代理方式</h4><p>反向代理的方式原理是让Ajax请求同域下的资源，该资源再被反向代理拦截，转发至异域，这样就绕开了浏览器的限制。</p>
+<p>使用反向代理的方式不仅仅可以用来解决跨域问题，还可以用来解决一下问题:</p>
+<ul>
+<li>请求的统一控制，包括设置权限、过滤规则等</li>
+<li>隐藏内部服务真实地址，暴露在外的只是反向代理服务器地址</li>
+<li>实现负载均衡，内部可以采用多台服务器来组成服务器集群，外部还是可以采用一个地址访问</li>
+<li>作为真实服务器的缓冲，解决瞬间负载量大的问题</li>
+</ul>
+<p>仍以前面的例子为例，修改App类的让其监听8000端口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">port(<span class="number">8000</span>);</span><br><span class="line">staticFileLocation(<span class="string">"/public"</span>);</span><br></pre></td></tr></table></figure>
+<p>同时注释掉CorsServer类Access-Control-Allow-Origin 所在行。</p>
+<p>以Nginx为例，设置反向代理，修改conf/nginx.conf里面配置</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        server_name  localhost;</span><br><span class="line"></span><br><span class="line">        #charset koi8-r;</span><br><span class="line"></span><br><span class="line">        #access_log  logs/host.access.log  main;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">            proxy_pass    http://localhost:8000/;</span><br><span class="line">        &#125;</span><br><span class="line">        location /cors&#123;</span><br><span class="line">            proxy_pass http://localhost:8080/cors;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同时修改Ajax Request 的URL</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">$(<span class="string">".btn-primary"</span>).click(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">     $.post(<span class="string">"http://localhost/cors"</span>,<span class="function"><span class="keyword">function</span>(<span class="params">result</span>)</span>&#123;</span><br><span class="line">      $(<span class="string">"p"</span>).text(result);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+<p>启动Nginx之后打开 <a href="http://localhost/" target="_blank" rel="noopener">http://localhost/</a> 测试,可以看到能够正确显示8080的Response内容</p>
+
+    </div>
+  </div>
+  
+    <div class="copy-right">
+      <div class="markdown-body">
+        <blockquote>
+        
+        
+          本文作者 : Shuai Liang <br>
+        
+        原文链接 : <a href="">http://liangshuai.me/2015/02/11/ajax-cross-domain/</a><br>
+        版权声明 : 本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！
+        </blockquote>
+      </div>
+    </div>
+  
+  
+  
+    <div class="social-share" style="margin-top: -2rem" data-wechat-qrcode-title="<p>微信扫一扫</p>" data-wechat-qrcode-helper="<p>微信右上角, 扫一扫分享</p>" data-sites="qzone, qq, weibo, wechat, douban, google, facebook, twitter">
+  <span style="color: #6b7487; font-size: 1.4rem;">分享到: </span>
+</div>
+<script src="https://cdn.bootcss.com/social-share.js/1.0.16/js/social-share.min.js" async></script>
+  
+
+  
+    <div id="reward">
+  
+    <p id="reward-meta">知识 & 情怀 | 二者兼得</p>
+  
+  <button id="reward-btn">
+    
+    <span>打赏</span>
+  </button>
+  <div id="reward-qrcode">
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/wechat.png" alt="微信扫一扫, 向我投食">
+        <p class="qrcode-meta">微信扫一扫, 向我投食</p>
+      </div>
+    
+      <div class="reward-qrcode--container">
+        <img class="qrcode-img" src="/img/alipay.png" alt="支付宝扫一扫, 向我投食">
+        <p class="qrcode-meta">支付宝扫一扫, 向我投食</p>
+      </div>
+    
+  </div>
+
+</div>
+
+<script>
+  (() => {
+    let button = document.querySelector('#reward-btn'),
+      qrcode = document.querySelector('#reward-qrcode'),
+      display = false;
+    
+    button.addEventListener('click', () => {
+      qrcode.style.display = display ? 'none' : 'block'
+      display = !display
+    }, false)
+  })()
+</script>
+  
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+      <span>
+        
+          <i class="iconfont icon-06tags"></i>标签: 
+          
+          <span class="span--tag">
+            <a href="/tags/Ajax/">
+              #Ajax
+            </a>
+          </span>
+          
+          <span class="span--tag">
+            <a href="/tags/cross-domain/">
+              #cross domain
+            </a>
+          </span>
+          
+          <span class="span--tag">
+            <a href="/tags/jsonp/">
+              #jsonp
+            </a>
+          </span>
+          
+          <span class="span--tag">
+            <a href="/tags/Access-Control-Allow-Origin/">
+              #Access-Control-Allow-Origin
+            </a>
+          </span>
+          
+        
+      </span>
+    </div>
+    <div class="article-meta pull-right">
+    </div>
+  </div>
+</div>
+
+
+
+
+  <nav class="post-navigation">
+    
+    
+      <div class="nav-next">
+        下一篇:
+        <a href="/2015/07/07/java-singeton/" target="_self">Java设计模式修炼之道之单例模式</a>
+        <i class="iconfont icon-next"></i>
+      </div>
+    
+  </nav>
+
+  
+    <a href="#comment" class="comment-anchor"></a>
+<div class="comment-title"><i class="iconfont icon-footprint"></i> 留下足迹 <i class="iconfont icon-footprint"></i></div>
+<div id="vcomments"></div>
+
+<script defer>
+  if( true ) {
+    let path = getRealPath()
+    new Valine({
+      el: "#vcomments",
+      appId: "YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz",
+      appKey: "pF4kpoD5nxRq1AOLaSxmFwfr",
+      notify: false,
+      verify: false,
+      avatar: "robohash",
+      placeholder: "正确填写邮箱, 才能及时收到回复哦♪(^∇^*)",
+      path
+    });
+  }
+</script>
+   
+
+  
+    <script defer>
+const valineAPI = (() => {
+  try {
+    AV.init("YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz", "pF4kpoD5nxRq1AOLaSxmFwfr");
+  } catch(error) {}
+  const isExist = (identity) => {
+    identity = identity || getRealPath();
+    let query = new AV.Query('Timer');
+    return new Promise((resolve, reject) => {
+      query.equalTo("identity", identity);
+      query.find().then(results => {
+        resolve(results.length > 0);
+      }, error => reject(error));
+    })
+  }
+
+  const _get = (identity) => {
+    let query = null;
+    if(identity && identity instanceof Array){
+      let querys = [];
+      for(let i = 0; i < identity.length; ++i) {
+        querys[i] = new AV.Query('Timer');
+        querys[i].equalTo('identity', identity[i]);
+      }
+      query = AV.Query.or.apply(null ,querys);
+    } else {
+      identity = identity || getRealPath();
+      query = new AV.Query("Timer");
+      query.equalTo("identity", identity);
+    }
+
+    return new Promise((resolve, reject) => {
+      query.find()
+      .then(results => resolve(results))
+      .catch(error => reject(error))
+    })
+  }
+
+  const create = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let Todo = AV.Object.extend('Timer');
+      let todo = new Todo();
+      todo.set("times", 1);
+      todo.set("identity", identity);
+      todo.save().then(res => resolve(true), error => reject(error));
+    })
+  }
+
+  const update = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let query = new AV.Query('Timer');
+      query.equalTo("identity", identity);
+      query.find().then(todos => {
+        todos.forEach(todo => {
+          todo.set("times", todo.attributes.times + 1);
+        });
+        return AV.Object.saveAll(todos);
+      }).then(todos => resolve(true), error => reject(error));
+    })
+  }
+
+  return {
+    isExist,
+    _get,
+    update,
+    create
+  }
+})()
+
+const calcAndWriteTimes = () => {
+  let isPost = true;
+
+  let timerAllDOM = document.querySelectorAll(".article-timer");
+
+  if(isPost) {
+    let identity = timerAllDOM[0].getAttribute("data-identity");
+    valineAPI.isExist(identity)
+    .then(exist => {
+      if(exist) {
+        return valineAPI.update(identity);
+      }
+      return new Promise(resolve => resolve(true));
+    })
+    .then( succuess => valineAPI._get(identity))
+    .then( result => timerAllDOM[0].innerText = result[0].attributes.times)
+    .catch(error => console.log(error.message))
+    return ;
+  }
+
+  let timerDOMCache = {};
+
+  for(let timerDOM of timerAllDOM) {
+    let identity = timerDOM.getAttribute("data-identity");
+    if(timerDOMCache.hasOwnProperty(identity)){
+      timerDOMCache[identity].dom.push(timerDOM);
+    }else{
+      timerDOMCache[identity] = {
+        dom: [timerDOM],
+        times: undefined
+      };
+    }
+  }
+
+  let identities = Object.keys(timerDOMCache);
+  valineAPI._get(identities).then(results => {
+    for(let result of results) {
+      let {identity, times} = result.attributes;
+      timerDOMCache[identity].times = times;
+      timerDOMCache[identity].dom.map(item => item.innerText = times);
+    }
+    for(let identity of identities) {
+      if(timerDOMCache[identity].times){
+        continue;
+      }
+      timerDOMCache[identity].dom.map(item => item.innerText = 1);
+      valineAPI.create(identity);
+    }
+  }).catch(error => console.log(error.message))
+}
+
+if(true){
+  calcAndWriteTimes();
+}
+</script>
+   
+
+</div>
+
+
+      <footer>
+  <p class="site-info">
+    Theme - <a href="https://github.com/dongyuanxin/theme-bmw">BMW</a> | Made With 💗 | Powered by <a href="https://godbmw.com/">GodBMW</a>
+    <br>
+    
+  </p>
+</footer>
+
+
+      <div class="back-to-top hidden">
+  <span>
+    <i class="iconfont icon-60"></i><span></span>%
+  </span>
+</div>
+
+<script>
+const updateIconToTop = percent => {
+  let dom = document.querySelector(".back-to-top span span");
+  dom.innerText = percent;
+  if(percent < 1) {
+    document.querySelector(".back-to-top").className = "back-to-top hidden";
+  } else {
+    document.querySelector(".back-to-top").className = "back-to-top";
+  }
+}
+
+const handleScoll = () => {
+  let isRunning = false;
+  return () => {
+    if (isRunning) return;
+    isRunning = true;
+    window.requestAnimationFrame(timestamp => {
+      let scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop,
+        scrollHeight =
+          document.documentElement.scrollHeight ||
+          document.body.scrollHeight,
+        clientHeight =
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      isRunning = false;
+      if (scrollTop <= 1) {
+        updateIconToTop(0);
+        return;
+      }
+      if (scrollTop + clientHeight >= scrollHeight) {
+        updateIconToTop(100);
+      } else {
+        updateIconToTop(parseInt(
+          100 * scrollTop / (scrollHeight - clientHeight),
+          10
+        ));
+      }
+    });
+  };
+}
+
+const backToTop = () => {
+  let scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop,
+    delay = 10,
+    time = 200;
+  if (scrollTop <= 20) {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  let step = Math.ceil(scrollTop * delay / time);
+  let timer = setInterval(() => {
+    scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop - step <= 0) {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      clearInterval(timer);
+    } else {
+      document.documentElement.scrollTop = scrollTop - step;
+      document.body.scrollTop = scrollTop - step;
+    }
+  }, delay);
+}
+
+document.addEventListener("scroll", handleScoll(), false);
+
+document.querySelector(".back-to-top").addEventListener("click", backToTop, false);
+
+</script>
+
+    </div>
+
+    
+
+    <script src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script>
+<script async>
+  let fancyTimer = setInterval(function(){
+    if(!window.$){
+      return;
+    }
+    $(document).ready(function() {
+      $(".post img").each(function () {
+        if($(this).parent().get(0).tagName.toLowerCase() === "a") {
+          return;
+        }
+        // $(this).attr("data-fancybox", "gallery"); // if you add 'data-fancybox', img will display after showed
+        var element = document.createElement("a");
+        $(element).attr("data-fancybox", "gallery");
+        $(element).attr("href", $(this).attr("src"));
+        $(this).wrap(element);
+      });
+      
+      clearInterval(fancyTimer);
+    });
+  }, 10);
+</script>
+
+    
+  </body>
+
+</html>

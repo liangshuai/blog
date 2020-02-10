@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+  
+  <title>梁帅的博客</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="梁帅の博客">
+  
+
+  
+
+  
+
+  
+    <link rel="icon" href="/img/favicon.ico">
+    <link rel="apple-touch-icon" href="/img/favicon.ico">
+  
+
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/icon/iconfont.css">
+<link rel="stylesheet" href="/css/github-markdown.css">
+<link rel="stylesheet" href="/css/highlight.css">
+
+  <script src="/js/util.js"></script>
+<script src="/js/valine.min.js"></script>
+
+  
+
+  
+
+  
+    <link href="https://cdn.bootcss.com/social-share.js/1.0.16/css/share.min.css" rel="stylesheet">
+  
+  
+  <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js" async></script>
+  
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.0/dist/av-min.js"></script>
+  
+
+</head>
+
+
+  <body>
+
+    
+
+    <div id="app">
+
+      <div class="header-wrap">
+  <header>
+    <div class="site-brand">
+      <div class="site-title">
+        <a href="/">梁帅の博客</a>
+      </div>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav-menu">
+      
+        <li class="nav-item" data-path="/">
+          
+            <a href="/" target="_self">
+              主页
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          
+            <a href="/archives/" target="_self">
+              归档
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          
+            <a href="/tags/" target="_self">
+              标签
+            </a>
+          
+        </li>
+      
+      </ul>
+    </nav>
+    <i class="iconfont icon-menu"></i>
+  </header>
+</div>
+
+<script>
+  let links = document.querySelectorAll('.nav-item');
+  for(let link of links){
+    let childrenLink = link.querySelector('ul');
+    link.addEventListener('mouseenter', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown active";
+      }
+    })
+    link.addEventListener('mouseleave', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown";
+      }
+    })
+  }
+  let rootRealPath = getRealPath(window.location.pathname, true);
+  for(let link of links) {
+    let linkPath = link.getAttribute("data-path");
+    if(linkPath && getRealPath(linkPath, true) === rootRealPath) {
+      link.className = "nav-item hover";
+    }
+  }
+
+  let iconMenu = document.querySelector("i.iconfont.icon-menu"),
+    iconMenuClicked = false;
+  let navDOM = document.querySelector("nav.site-navigation");
+  iconMenu.addEventListener("click", () => {
+    iconMenuClicked 
+      ? navDOM.className = "site-navigation active"
+      : navDOM.className = "site-navigation";
+    iconMenuClicked = !iconMenuClicked;
+  })
+</script>
+
+      
+<div class="container home-index">
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2016/05/26/css-modules/">
+        <span>CSS Modules 简单入门</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2016-05-26
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2016-05-26
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="css-modules"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>CSS的选择器在全局范围都会生效，比如有时候会有A写了 <code>btn</code> 的class定义了一个默认显示蓝色按钮， B之后不小心也写了一个 <code>btn</code> 的class， 很不幸，A需要的按钮样式可能被B所写的样式覆盖！ Bootstrap中的类似btn这种情况，在 <code>btn</code> 的class 通常定义的是所有按钮通用的样式，并且通过在定义 <code>btn-success</code>、<code>btn-error</code> 等样式通过选择器优先级来实现不同的样式。但是这种依旧相当于在全局中定义了样式， 无法避免将来有人不经意的又写了<code>btn-success</code>这样的class覆盖或者影响了之前的样式。</p>
+<p>为了解决这问题，前端大牛们提出了种种的命名约定来避免命名冲突。 比如<a href="http://oocss.org/" target="_blank" rel="noopener">OOCSS</a>、<a href="https://smacss.com/" target="_blank" rel="noopener">SMACSS</a>、<a href="https://en.bem.info/methodology/naming-convention/" target="_blank" rel="noopener">BEM</a>、<a href="https://suitcss.github.io/" target="_blank" rel="noopener">SUIT</a>等等。 以BEM为例，class的名字以<code>block__element--modifier</code>这种方式来命名，比如写个Menu， 那么Menu中的item处于active状态就要命名成 <code>menu__item--active</code> 这样的写法可能会解决问题，但是写起来总感觉有些反人类。所以有人说<a href="http://weibo.com/1960954893/Ac2LAgIjn?type=comment" target="_blank" rel="noopener">BEM很火,看着就想吐</a> . 并没有在项目中实践BEM这种命名方式，但是它来解决命名冲突的思路还是挺不错的，相当于通过模块命名前缀的方式避开在全局空间下命名，每个组件在它所属的命名空间下定义。</p>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/CSS/">
+                  #CSS
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Web组件/">
+                  #Web组件
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/CSS-Modules/">
+                  #CSS Modules
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="css-modules"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2015/12/29/centos-firewall/">
+        <span>CentOS 7开放端口和关闭防火墙</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2015-12-29
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2015-12-29
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="centos-firewall"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>想用CentOS + Vagrant搭建一个开发环境，搭建之后发现一直无法访问虚拟机中的服务，起初以为是Vagrant配置的问题，尝试修改配置，可是发现都不行，甚至连端口转发的方式都无法访问，于是猜测是因为CentOS7防火墙的关系，试了试打开端口和关闭防火墙，发现都可以访问到了。</p>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/CentOS/">
+                  #CentOS
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Vagrant/">
+                  #Vagrant
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Firewall/">
+                  #Firewall
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="centos-firewall"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2015/11/04/https-over-express/">
+        <span>Express配置HTTPS服务器</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2015-11-04
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2015-11-04
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="https-over-express"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>项目部署到生产环境下，出现了一个Bug，同样的代码在DEV环境下却是好的，怀疑是HTTPS导致的问题，所以在本地搭了一个HTTPS的服务器用来测试。</p>
+<p>整个过程还是很简单的，简单记录一下。</p>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Node-js/">
+                  #Node.js
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Express/">
+                  #Express
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Server/">
+                  #Server
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/HTTPS/">
+                  #HTTPS
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="https-over-express"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2015/07/15/git-mutilple-host-ssh-key/">
+        <span>为多个Git仓库配置SSH Key</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2015-07-15
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2015-07-15
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="git-mutilple-host-ssh-key"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>在使用Git做版本控制的时候, 如果使用了远程仓库的话通常有两种连接方式，一种是HTTPS的，另一种是SSH的，<br>由于远程仓库需要一定的权限才能操作，所以需要认证。如果使用了HTTPS这种方式就需要每一次与远程仓库之间交互都需要输入用户名和密码，而SSH会使用SSH认证方式来连接，只要简单的配置一次即可，不需要每次都输入，所以通常都会选择使用SSH的方式。<br>使用SSH方式连接的话需要配置SSH Key和配置用户名和密码<br>
+      </p></div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/git/">
+                  #git
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/ssh/">
+                  #ssh
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/github/">
+                  #github
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="git-mutilple-host-ssh-key"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2015/07/07/java-singeton/">
+        <span>Java设计模式修炼之道之单例模式</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2015-07-07
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2015-07-07
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="java-singeton"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>单例模式顾名思义就是要保证某个类只被实例化一次，该模式常常用于窗口管理器、文件系统等代表那些本质上唯一的系统组件。由于要保证该类只能被实例化一次，所以就要求是该类自己创建自己的实例，因为如果能够别的类有能力来创建该类的实例的话就不能保证只有一个实例。为了使外界能够使用这个唯一的实例，单例类必须向外界提供自己的实例。创建单例的方式有以下几种:</p>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Java/">
+                  #Java
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/单例/">
+                  #单例
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Singeton/">
+                  #Singeton
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="java-singeton"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+  <div class="post">
+    <h1 class="article-title">
+      <a href="/2015/02/11/ajax-cross-domain/">
+        <span>Ajax跨域问题解决方案</span>
+      </a>
+    </h1>
+    <!-- PC端文章信息 -->
+    <div class="article-top-meta pc-view">
+      <span>
+        发布时间 : 2015-02-11
+      </span>
+    </div>
+    <!-- 移动端文章信息 -->
+    <div class="article-top-meta mobile-view">
+      <span>
+        发布 : 2015-02-11
+      </span>
+      
+      
+        <span>
+          浏览 : <span class="article-timer" data-identity="ajax-cross-domain"></span>
+        </span>
+      
+    </div>
+    
+    <!-- 文章简介 -->
+    <div class="article-content">
+      <div class="markdown-body article-content--inner" v-html="mdToHtml(psg.summary)">
+        <p>JavaScript出于同源策略<a href="http://en.wikipedia.org/wiki/Same-origin_policy" target="_blank" rel="noopener">Same-origin policy</a>，对跨域问题作了限制，不同域的客户端脚本是不能发送请求其它域。同源策略是浏览器最核心也是最基本的安全功能，所有的浏览器(注意这里说的是浏览器，移动开发中的WebView并不是浏览器，所以是可以跨域的!)都已经实现了同源策略。但是项目中经常因为各种原因，可能会遇到跨域问题。</p>
+      </div>
+    </div>
+    <div class="article-footer">
+      <div class="article-meta pull-left">
+        <!-- 分类pc端可见 -->
+        <span class="pc-view">
+          
+        <span>
+          
+            <i class="iconfont icon-06tags"></i>标签:
+            
+              <span class="span--tag">
+                <a href="/tags/Ajax/">
+                  #Ajax
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/cross-domain/">
+                  #cross domain
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/jsonp/">
+                  #jsonp
+                </a>
+              </span>
+            
+              <span class="span--tag">
+                <a href="/tags/Access-Control-Allow-Origin/">
+                  #Access-Control-Allow-Origin
+                </a>
+              </span>
+            
+                    
+        </span>
+      </span></div>
+      
+        <div class="article-meta pull-right">
+          <span class="pc-view">
+            <i class="iconfont icon-view"></i>浏览: <span class="article-timer" data-identity="ajax-cross-domain"></span>
+          </span>
+        </div>
+      
+    </div>
+  </div>
+  
+
+  <nav class="page-navigation">
+    
+      <a href="/">上一页</a>
+    
+    
+  </nav>
+
+  
+    <script defer>
+const valineAPI = (() => {
+  try {
+    AV.init("YlHvKuHqzd7Hzfm4vip3xn68-gzGzoHsz", "pF4kpoD5nxRq1AOLaSxmFwfr");
+  } catch(error) {}
+  const isExist = (identity) => {
+    identity = identity || getRealPath();
+    let query = new AV.Query('Timer');
+    return new Promise((resolve, reject) => {
+      query.equalTo("identity", identity);
+      query.find().then(results => {
+        resolve(results.length > 0);
+      }, error => reject(error));
+    })
+  }
+
+  const _get = (identity) => {
+    let query = null;
+    if(identity && identity instanceof Array){
+      let querys = [];
+      for(let i = 0; i < identity.length; ++i) {
+        querys[i] = new AV.Query('Timer');
+        querys[i].equalTo('identity', identity[i]);
+      }
+      query = AV.Query.or.apply(null ,querys);
+    } else {
+      identity = identity || getRealPath();
+      query = new AV.Query("Timer");
+      query.equalTo("identity", identity);
+    }
+
+    return new Promise((resolve, reject) => {
+      query.find()
+      .then(results => resolve(results))
+      .catch(error => reject(error))
+    })
+  }
+
+  const create = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let Todo = AV.Object.extend('Timer');
+      let todo = new Todo();
+      todo.set("times", 1);
+      todo.set("identity", identity);
+      todo.save().then(res => resolve(true), error => reject(error));
+    })
+  }
+
+  const update = (identity) => {
+    identity = identity || getRealPath();
+    return new Promise((resolve, reject) => {
+      let query = new AV.Query('Timer');
+      query.equalTo("identity", identity);
+      query.find().then(todos => {
+        todos.forEach(todo => {
+          todo.set("times", todo.attributes.times + 1);
+        });
+        return AV.Object.saveAll(todos);
+      }).then(todos => resolve(true), error => reject(error));
+    })
+  }
+
+  return {
+    isExist,
+    _get,
+    update,
+    create
+  }
+})()
+
+const calcAndWriteTimes = () => {
+  let isPost = false;
+
+  let timerAllDOM = document.querySelectorAll(".article-timer");
+
+  if(isPost) {
+    let identity = timerAllDOM[0].getAttribute("data-identity");
+    valineAPI.isExist(identity)
+    .then(exist => {
+      if(exist) {
+        return valineAPI.update(identity);
+      }
+      return new Promise(resolve => resolve(true));
+    })
+    .then( succuess => valineAPI._get(identity))
+    .then( result => timerAllDOM[0].innerText = result[0].attributes.times)
+    .catch(error => console.log(error.message))
+    return ;
+  }
+
+  let timerDOMCache = {};
+
+  for(let timerDOM of timerAllDOM) {
+    let identity = timerDOM.getAttribute("data-identity");
+    if(timerDOMCache.hasOwnProperty(identity)){
+      timerDOMCache[identity].dom.push(timerDOM);
+    }else{
+      timerDOMCache[identity] = {
+        dom: [timerDOM],
+        times: undefined
+      };
+    }
+  }
+
+  let identities = Object.keys(timerDOMCache);
+  valineAPI._get(identities).then(results => {
+    for(let result of results) {
+      let {identity, times} = result.attributes;
+      timerDOMCache[identity].times = times;
+      timerDOMCache[identity].dom.map(item => item.innerText = times);
+    }
+    for(let identity of identities) {
+      if(timerDOMCache[identity].times){
+        continue;
+      }
+      timerDOMCache[identity].dom.map(item => item.innerText = 1);
+      valineAPI.create(identity);
+    }
+  }).catch(error => console.log(error.message))
+}
+
+if(true){
+  calcAndWriteTimes();
+}
+</script>
+   
+</div>
+
+
+      <footer>
+  <p class="site-info">
+    Theme - <a href="https://github.com/dongyuanxin/theme-bmw">BMW</a> | Made With 💗 | Powered by <a href="https://godbmw.com/">GodBMW</a>
+    <br>
+    
+  </p>
+</footer>
+
+
+      <div class="back-to-top hidden">
+  <span>
+    <i class="iconfont icon-60"></i><span></span>%
+  </span>
+</div>
+
+<script>
+const updateIconToTop = percent => {
+  let dom = document.querySelector(".back-to-top span span");
+  dom.innerText = percent;
+  if(percent < 1) {
+    document.querySelector(".back-to-top").className = "back-to-top hidden";
+  } else {
+    document.querySelector(".back-to-top").className = "back-to-top";
+  }
+}
+
+const handleScoll = () => {
+  let isRunning = false;
+  return () => {
+    if (isRunning) return;
+    isRunning = true;
+    window.requestAnimationFrame(timestamp => {
+      let scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop,
+        scrollHeight =
+          document.documentElement.scrollHeight ||
+          document.body.scrollHeight,
+        clientHeight =
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      isRunning = false;
+      if (scrollTop <= 1) {
+        updateIconToTop(0);
+        return;
+      }
+      if (scrollTop + clientHeight >= scrollHeight) {
+        updateIconToTop(100);
+      } else {
+        updateIconToTop(parseInt(
+          100 * scrollTop / (scrollHeight - clientHeight),
+          10
+        ));
+      }
+    });
+  };
+}
+
+const backToTop = () => {
+  let scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop,
+    delay = 10,
+    time = 200;
+  if (scrollTop <= 20) {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  let step = Math.ceil(scrollTop * delay / time);
+  let timer = setInterval(() => {
+    scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop - step <= 0) {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      clearInterval(timer);
+    } else {
+      document.documentElement.scrollTop = scrollTop - step;
+      document.body.scrollTop = scrollTop - step;
+    }
+  }, delay);
+}
+
+document.addEventListener("scroll", handleScoll(), false);
+
+document.querySelector(".back-to-top").addEventListener("click", backToTop, false);
+
+</script>
+
+    </div>
+
+    
+
+    <script src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script>
+<script async>
+  let fancyTimer = setInterval(function(){
+    if(!window.$){
+      return;
+    }
+    $(document).ready(function() {
+      $(".post img").each(function () {
+        if($(this).parent().get(0).tagName.toLowerCase() === "a") {
+          return;
+        }
+        // $(this).attr("data-fancybox", "gallery"); // if you add 'data-fancybox', img will display after showed
+        var element = document.createElement("a");
+        $(element).attr("data-fancybox", "gallery");
+        $(element).attr("href", $(this).attr("src"));
+        $(this).wrap(element);
+      });
+      
+      clearInterval(fancyTimer);
+    });
+  }, 10);
+</script>
+
+    
+  </body>
+
+</html>
